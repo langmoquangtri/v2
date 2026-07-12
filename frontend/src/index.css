@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Barlow Condensed", ui-serif, Georgia, Cambria, serif;
+  --font-display: "Barlow Condensed", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Color system */
+  --color-deep-navy: #17365F;
+  --color-dark-navy: #102B4E;
+  --color-muted-blue: #607FA8;
+  --color-soft-blue: #7892B5;
+  --color-cream: #E9E5D2;
+  --color-light-cream: #F3F0E3;
+  --color-stone-gray: #D7D7D2;
+  --color-charcoal: #252C33;
+
+  /* Accents */
+  --color-muted-pink: #C98FA3;
+  --color-red-clay: #9B5C56;
+  --color-moss: #7F8A72;
+
+  /* Legacy color mapping to keep old views beautifully styled and safe */
+  --color-clay: #17365F; /* Primary is now Deep Navy */
+  --color-clay-dark: #102B4E; /* Dark Navy */
+  --color-clay-light: #E9E5D2; /* Cream */
+  --color-beige: #F3F0E3; /* Light Cream */
+  --color-beige-dark: #D7D7D2; /* Stone Gray */
+  --color-beige-paper: #E9E5D2; /* Cream */
+  --color-stone-charcoal: #252C33; /* Charcoal */
+  --color-bronze: #7892B5; /* Soft Blue */
+  --color-bronze-dark: #607FA8; /* Muted Blue */
+}
+
+body {
+  background-color: var(--color-light-cream);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Museum editorial thin architectural lines */
+.museum-border {
+  border: 1px solid var(--color-stone-gray);
+}
+
+.museum-border-navy {
+  border: 1px solid rgba(23, 54, 95, 0.15);
+}
+
+/* Custom ornamental border styled with museum precision */
+.traditional-border {
+  border: 1px solid var(--color-soft-blue);
+  position: relative;
+  border-radius: 0px !important;
+}
+
+.traditional-border::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(120, 146, 181, 0.25);
+  pointer-events: none;
+}
+
+/* Elegant scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-light-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-deep-navy);
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-dark-navy);
+}
+
+/* Custom museum textures and lines */
+.bg-carving-pattern {
+  background-image: radial-gradient(rgba(23, 54, 95, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.heritage-grid {
+  position: relative;
+}
+.heritage-grid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(23, 54, 95, 0.1) 20%, rgba(23, 54, 95, 0.1) 80%, transparent);
+}
+
