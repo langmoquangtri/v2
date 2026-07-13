@@ -67,6 +67,25 @@ export interface Post {
   imageUrl: string;
 }
 
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  active: boolean;
+  sort_order: number;
+}
+
+export interface CtaSlide {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  image: string;
+  link?: string;
+  button_text?: string;
+  active: boolean;
+  sort_order: number;
+}
+
 export type ViewType =
   | { type: "home" }
   | { type: "products"; categorySlug?: string }

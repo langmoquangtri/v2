@@ -87,7 +87,7 @@ export async function getBanners() {
     activeBanners.sort((a, b) => a.sort_order - b.sort_order);
     return activeBanners.length > 0 ? activeBanners : fallbackBanners;
   } catch (error) {
-    console.error("Error fetching banners client-side:", error);
+    console.warn("Error fetching banners client-side (using fallback):", error);
     return fallbackBanners;
   }
 }
@@ -117,7 +117,7 @@ export async function getCategories() {
     activeCategories.sort((a, b) => a.sort_order - b.sort_order);
     return activeCategories.length > 0 ? activeCategories : fallbackCategories;
   } catch (error) {
-    console.error("Error fetching categories client-side:", error);
+    console.warn("Error fetching categories client-side (using fallback):", error);
     return fallbackCategories;
   }
 }
@@ -189,7 +189,7 @@ export async function getProducts(categoriesList: any[]) {
     publishedProducts.sort((a, b) => a.sort_order - b.sort_order);
     return publishedProducts;
   } catch (error) {
-    console.error("Error fetching products client-side:", error);
+    console.warn("Error fetching products client-side:", error);
     return [];
   }
 }
@@ -235,7 +235,7 @@ export async function getProjects() {
     publishedProjects.sort((a, b) => a.sort_order - b.sort_order);
     return publishedProjects;
   } catch (error) {
-    console.error("Error fetching projects client-side:", error);
+    console.warn("Error fetching projects client-side:", error);
     return [];
   }
 }
@@ -279,8 +279,128 @@ export async function getPosts() {
     const publishedPosts = docs.filter(p => p.status === "published");
     return publishedPosts;
   } catch (error) {
-    console.error("Error fetching posts client-side:", error);
+    console.warn("Error fetching posts client-side:", error);
     return [];
+  }
+}
+
+export const fallbackFAQs = [
+  {
+    id: "faq-1",
+    question: "Chất liệu đá nào tốt nhất để làm bia mộ và lăng mộ?",
+    answer: "Chúng tôi sử dụng Đá Granite (Hoa Cương) nhập khẩu nguyên tấm có độ bóng gương vĩnh cửu và Đá Xanh tự nhiên nguyên khối từ Thanh Hóa, Ninh Bình. Cả hai loại đá đều chống rêu mốc, không phai màu chữ và bền bỉ trọn đời dưới thời tiết khắc nghiệt.",
+    active: true,
+    sort_order: 1
+  },
+  {
+    id: "faq-2",
+    question: "Thời gian hoàn thành một sản phẩm bia mộ mất bao lâu?",
+    answer: "Thông thường, quy trình chế tác và hoàn thiện một sản phẩm bia mộ chuẩn chất lượng cao tại xưởng Đá Tâm An mất từ 3 đến 5 ngày kể từ khi thống nhất bản vẽ thiết kế 2D.",
+    active: true,
+    sort_order: 2
+  },
+  {
+    id: "faq-3",
+    question: "Xưởng có hỗ trợ khảo sát và thiết kế theo kích thước phong thủy không?",
+    answer: "Có, Đá Tâm An hỗ trợ đo đạc khảo sát thực tế và thiết kế phác thảo bản vẽ 2D/3D theo cung số đỏ của thước Lỗ Ban âm phần hoàn toàn miễn phí.",
+    active: true,
+    sort_order: 3
+  },
+  {
+    id: "faq-4",
+    question: "Làm thế nào để tôi đặt hàng từ xa khi không ở gần xưởng?",
+    answer: "Quý khách chỉ cần liên hệ hotline hoặc gửi thông tin qua form liên hệ. Chúng tôi sẽ tư vấn, phác thảo thiết kế và gửi duyệt qua Zalo/Email. Sau khi duyệt mẫu, chúng tôi chế tác và vận chuyển, lắp đặt toàn quốc.",
+    active: true,
+    sort_order: 4
+  },
+  {
+    id: "faq-5",
+    question: "Sản phẩm của Đá Tâm An có được bảo hành không?",
+    answer: "Tất cả các sản phẩm lăng mộ đá và bia mộ đá của xưởng Đá Tâm An đều được cam kết bảo hành nứt vỡ trọn đời đối với phôi đá tự nhiên và bảo hành lớp sơn mạ chữ trong vòng 5 năm.",
+    active: true,
+    sort_order: 5
+  }
+];
+
+export async function getFAQs() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "faqs"));
+    if (querySnapshot.empty) return fallbackFAQs;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        question: data.question || "",
+        answer: data.answer || "",
+        active: data.active !== false,
+        sort_order: data.sort_order || 0
+      };
+    });
+    const activeFAQs = docs.filter(f => f.active);
+    activeFAQs.sort((a, b) => a.sort_order - b.sort_order);
+    return activeFAQs.length > 0 ? activeFAQs : fallbackFAQs;
+  } catch (error) {
+    console.warn("Error fetching FAQs client-side (using fallback):", error);
+    return fallbackFAQs;
+  }
+}
+
+export const fallbackCtaSlides = [
+  {
+    id: "slide-1",
+    title: "Chế Tác Tinh Hoa",
+    subtitle: "Nghệ nhân Đá Tâm An thổi hồn vào từng thớ đá tự nhiên trường tồn.",
+    image: "https://images.unsplash.com/photo-1605647540924-852290f6b0d5?q=80&w=600&auto=format&fit=crop",
+    link: "",
+    button_text: "Liên Hệ Ngay",
+    active: true,
+    sort_order: 1
+  },
+  {
+    id: "slide-2",
+    title: "Đá Nguyên Khối",
+    subtitle: "Cam kết 100% phôi đá Granite, đá xanh tuyển chọn không nứt vỡ.",
+    image: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop",
+    link: "",
+    button_text: "Nhận Báo Giá",
+    active: true,
+    sort_order: 2
+  },
+  {
+    id: "slide-3",
+    title: "Chuẩn Phong Thủy Lỗ Ban",
+    subtitle: "Đo đạc tận nơi, lên bản vẽ mô phỏng 2D/3D chuẩn phong thủy âm phần.",
+    image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=600&auto=format&fit=crop",
+    link: "",
+    button_text: "Khảo Sát Miễn Phí",
+    active: true,
+    sort_order: 3
+  }
+];
+
+export async function getCtaSlides() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "cta_slides"));
+    if (querySnapshot.empty) return fallbackCtaSlides;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || "",
+        subtitle: data.subtitle || "",
+        image: data.image || "",
+        link: data.link || "",
+        button_text: data.button_text || "",
+        active: data.active !== false,
+        sort_order: data.sort_order || 0
+      };
+    });
+    const activeSlides = docs.filter(s => s.active && s.image);
+    activeSlides.sort((a, b) => a.sort_order - b.sort_order);
+    return activeSlides.length > 0 ? activeSlides : fallbackCtaSlides;
+  } catch (error) {
+    console.warn("Error fetching CTA slides client-side (using fallback):", error);
+    return fallbackCtaSlides;
   }
 }
 

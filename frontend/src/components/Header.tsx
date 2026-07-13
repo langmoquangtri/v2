@@ -42,19 +42,13 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
           {/* Logo Brand Brandmark */}
           <div 
             onClick={(e) => handleNavClick({ type: "home" }, e)}
-            className="flex items-center gap-3.5 cursor-pointer group"
+            className="flex items-center cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-none bg-deep-navy flex items-center justify-center traditional-border transition-transform group-hover:scale-105">
-              <span className="font-serif font-bold text-xl text-cream tracking-tighter">TA</span>
-            </div>
-            <div>
-              <h1 className="font-serif font-extrabold text-xl sm:text-2xl text-deep-navy tracking-tight flex items-center gap-1.5 leading-none">
-                ĐÁ TÂM AN
-              </h1>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-red-clay font-semibold block mt-1.5">
-                Bia Mộ Đá Mỹ Nghệ Cao Cấp
-              </span>
-            </div>
+            <img 
+              src="https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/logo/Layer%201.png" 
+              alt="Đá Tâm An" 
+              className="h-14 w-auto transition-transform group-hover:scale-105 object-contain"
+            />
           </div>
 
           {/* Desktop Navigation */}

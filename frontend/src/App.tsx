@@ -25,8 +25,9 @@ import {
 } from "lucide-react";
 import Header from "./components/Header";
 import { HeroParallax } from "./components/HeroParallax";
-import { Banner, Category, Product, Project, Post, ViewType } from "./types";
-import { getBanners, getCategories, getProducts, getProjects, getPosts, saveContactMessage } from "./lib/firebase";
+import CtaFaqSection from "./components/CtaFaqSection";
+import { Banner, Category, Product, Project, Post, ViewType, FAQ, CtaSlide } from "./types";
+import { getBanners, getCategories, getProducts, getProjects, getPosts, saveContactMessage, getFAQs, getCtaSlides } from "./lib/firebase";
 
 function getYoutubeVideoId(url: string): string | null {
   const match = url.match(
@@ -98,6 +99,8 @@ export default function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [ctaSlides, setCtaSlides] = useState<CtaSlide[]>([]);
   
   // Detail views state
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
@@ -154,7 +157,9 @@ export default function App() {
         const projectsData = await getProjects();
         const postsData = await getPosts();
         const productsData = await getProducts(categoriesData);
-
+        const faqsData = await getFAQs();
+        const ctaSlidesData = await getCtaSlides();
+ 
         setHomepageData({
           banners: bannersData,
           categories: categoriesData,
@@ -162,11 +167,13 @@ export default function App() {
           projects: projectsData,
           posts: postsData.slice(0, 3)
         });
-
+ 
         setCategories(categoriesData);
         setAllProducts(productsData);
         setProjects(projectsData);
         setPosts(postsData);
+        setFaqs(faqsData);
+        setCtaSlides(ctaSlidesData);
 
         setError(null);
       } catch (err: any) {
@@ -410,7 +417,7 @@ export default function App() {
             <HeroParallax />
 
             {/* Core Values Section */}
-            <section className="py-12 bg-[#223b2e] border-b border-[#182a20]">
+            <section className="py-12 bg-deep-navy border-b border-dark-navy">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
                   <div className="p-4 flex flex-col md:flex-row items-center md:items-start gap-4">
@@ -449,6 +456,9 @@ export default function App() {
                 </div>
               </div>
             </section>
+
+            {/* Custom CTA & FAQ Section */}
+            <CtaFaqSection faqs={faqs} ctaSlides={ctaSlides} onContactClick={() => navigate({ type: "contact" })} />
 
             {/* Categories Division (Danh mục nổi bật) */}
             <section className="py-20 px-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
