@@ -4,7 +4,7 @@
   },
   "hosting": [
     {
-      "site": "lang-mo-cms",
+      "target": "web",
       "public": "frontend/dist",
       "ignore": [
         "firebase.json",
@@ -19,7 +19,7 @@
       ]
     },
     {
-      "site": "lang-mo-cms-admin",
+      "target": "admin",
       "public": "firecms-admin/build",
       "ignore": [
         "firebase.json",

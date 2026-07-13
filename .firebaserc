@@ -1,0 +1,16 @@
+{
+  "projects": {},
+  "targets": {
+    "lang-mo-cms": {
+      "hosting": {
+        "web": [
+          "lang-mo-cms"
+        ],
+        "admin": [
+          "lang-mo-cms-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
