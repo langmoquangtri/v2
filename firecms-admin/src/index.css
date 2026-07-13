@@ -3,7 +3,7 @@
 
 @source "../index.html";
 @source "./**/*.{js,ts,jsx,tsx}";
-@source "../node_modules/@firecms/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@firecms/**/*.{js,ts,jsx,tsx}";
 
 @custom-variant dark (:is(.dark &));
 
