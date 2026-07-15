@@ -7,6 +7,7 @@ export type Category = {
   description: string;
   image: string;
   active: boolean;
+  highlight?: boolean;
   sort_order: number;
   created_at: Date;
   updated_at: Date;
@@ -63,6 +64,13 @@ export const categoriesCollection = buildCollection<Category>({
       name: "Hiển thị",
       dataType: "boolean",
       defaultValue: true,
+    },
+
+    highlight: {
+      name: "Nổi bật (Highlight Dropdown)",
+      dataType: "boolean",
+      description: "Bật để hiển thị danh mục này trong menu thả xuống (dropdown) Sản phẩm",
+      defaultValue: false,
     },
 
     sort_order: {

@@ -575,7 +575,7 @@ async function fetchPosts() {
         name: data.title || "",
         slug: data.slug || "",
         date: publishedDate,
-        author: data.author || "Ngh\u1EC7 nh\xE2n \u0110\xE1 T\xE2m An",
+        author: data.author || "Ngh\u1EC7 nh\xE2n L\u0102NG M\u1ED8 \u0110\xC1 QU\u1EA2NG TR\u1ECA",
         readTime,
         shortDescription: data.excerpt || "",
         content,

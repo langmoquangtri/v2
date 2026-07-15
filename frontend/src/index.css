@@ -12,8 +12,8 @@
   --color-dark-navy: #102B4E;
   --color-muted-blue: #607FA8;
   --color-soft-blue: #7892B5;
-  --color-cream: #E9E5D2;
-  --color-light-cream: #F3F0E3;
+  --color-cream: #FFFFFF;
+  --color-light-cream: #FFFFFF;
   --color-stone-gray: #D7D7D2;
   --color-charcoal: #252C33;
 
@@ -25,10 +25,10 @@
   /* Legacy color mapping to keep old views beautifully styled and safe */
   --color-clay: #17365F; /* Primary is now Deep Navy */
   --color-clay-dark: #102B4E; /* Dark Navy */
-  --color-clay-light: #E9E5D2; /* Cream */
-  --color-beige: #F3F0E3; /* Light Cream */
+  --color-clay-light: #FFFFFF; /* Cream -> White */
+  --color-beige: #FFFFFF; /* Light Cream -> White */
   --color-beige-dark: #D7D7D2; /* Stone Gray */
-  --color-beige-paper: #E9E5D2; /* Cream */
+  --color-beige-paper: #FFFFFF; /* Cream -> White */
   --color-stone-charcoal: #252C33; /* Charcoal */
   --color-bronze: #7892B5; /* Soft Blue */
   --color-bronze-dark: #607FA8; /* Muted Blue */
@@ -124,7 +124,7 @@ body {
   background-image:
     radial-gradient(circle at var(--c5-x1) var(--c5-y1), #7892b5 0px, transparent var(--c5-s1)),
     radial-gradient(circle at var(--c5-x2) var(--c5-y2), #9b5c56 0px, transparent var(--c5-s2)),
-    radial-gradient(circle at var(--c5-x3) var(--c5-y3), #e9e5d2 0px, transparent var(--c5-s3)),
+    radial-gradient(circle at var(--c5-x3) var(--c5-y3), #ffffff 0px, transparent var(--c5-s3)),
     radial-gradient(circle at var(--c5-x4) var(--c5-y4), #607fa8 0px, transparent var(--c5-s4)),
     radial-gradient(circle at var(--c5-x5) var(--c5-y5), #c98fa3 0px, transparent var(--c5-s5));
   animation:
@@ -177,4 +177,58 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .c5-animated-gradient { animation: none; }
 }
+
+/* 10% desktop font-size optimization for content/body text (excluding headings and display titles) */
+@media (min-width: 1024px) {
+  body {
+    font-size: 1.1rem; /* Increase base font size by 10% */
+  }
+
+  /* Increase standard content text sizing classes by 10% */
+  .text-xs:not(.font-serif):not(.font-display) {
+    font-size: calc(0.75rem * 1.1) !important; /* ~0.825rem */
+  }
+  .text-sm:not(.font-serif):not(.font-display) {
+    font-size: calc(0.875rem * 1.1) !important; /* ~0.9625rem */
+  }
+  .text-base:not(.font-serif):not(.font-display) {
+    font-size: calc(1rem * 1.1) !important; /* ~1.1rem */
+  }
+  .text-lg:not(.font-serif):not(.font-display) {
+    font-size: calc(1.125rem * 1.1) !important; /* ~1.2375rem */
+  }
+
+  /* Increase custom/arbitrary small content text sizing classes by 10% */
+  .text-\[9px\]:not(.font-serif):not(.font-display) {
+    font-size: calc(9px * 1.1) !important; /* ~9.9px */
+  }
+  .text-\[10px\]:not(.font-serif):not(.font-display) {
+    font-size: calc(10px * 1.1) !important; /* ~11px */
+  }
+  .text-\[11px\]:not(.font-serif):not(.font-display) {
+    font-size: calc(11px * 1.1) !important; /* ~12.1px */
+  }
+}
+
+/* Custom Infinite Smooth Marquee Slider for Testimonials */
+@keyframes marquee-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 35s linear infinite;
+}
+
+.animate-marquee-left:hover {
+  animation-play-state: paused;
+}
+
+
 

@@ -16,7 +16,7 @@
   ],
 
   "vars": {
-    "PUBLIC_BASE_URL": "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev",
+    "PUBLIC_BASE_URL": "https://images.langmodaquangtri.com",
     "FIREBASE_API_KEY": "AIzaSyAT-B3qaiggBIURgQ2KZNxyoOZF3EfDhbw",
     "ALLOWED_EMAILS": "",
     "ALLOWED_ORIGINS": "*"

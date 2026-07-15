@@ -575,7 +575,7 @@ async function fetchPosts() {
         name: data.title || "",
         slug: data.slug || "",
         date: publishedDate,
-        author: data.author || "Nghệ nhân Đá Tâm An",
+        author: data.author || "Nghệ nhân LĂNG MỘ ĐÁ QUẢNG TRỊ",
         readTime: readTime,
         shortDescription: data.excerpt || "",
         content: content,

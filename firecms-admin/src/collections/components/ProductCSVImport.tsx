@@ -282,8 +282,8 @@ export function ProductCSVImport({ collection, path }: CollectionActionsProps) {
   // Generate a sample CSV template for download
   const handleDownloadTemplate = () => {
     const csvContent = "Tên sản phẩm,Slug,Mã sản phẩm,Mã danh mục,Chất liệu đá,Kích thước,Mô tả ngắn,Nội dung chi tiết,Giá tham khảo,Thứ tự hiển thị,Sản phẩm nổi bật,Trạng thái,SEO Title,SEO Description,Ảnh đại diện,Thư viện ảnh\n" +
-      "Lăng mộ đá xanh Thanh Hóa,lang-mo-da-xanh-thanh-hoa,LM001,lang-mo-da,Đá xanh Thanh Hóa,81 x 127 cm,Thiết kế cổ kính tinh xảo,Mô tả chi tiết về sản phẩm bằng Markdown...,15000000,1,true,published,Lăng mộ đá xanh Thanh Hóa cao cấp,Chuyên sản xuất lăng mộ đá xanh mạ vàng 24K,https://pub-741.r2.dev/products/main/avatar.jpg,https://pub-741.r2.dev/products/gallery/img1.jpg;https://pub-741.r2.dev/products/gallery/img2.jpg\n" +
-      "Mộ đá tròn mạ vàng,,MD002,mo-da-tron,Đá xanh nguyên khối,Đường kính 127 cm,Mộ tròn mạ vàng phong thủy,Mô tả chi tiết tại đây...,25000000,2,false,draft,Mộ đá tròn mạ vàng phong thủy,Sản xuất mộ tròn mạ vàng đẹp Ninh Vân,https://pub-741.r2.dev/products/main/avatar2.jpg,";
+      "Lăng mộ đá xanh Thanh Hóa,lang-mo-da-xanh-thanh-hoa,LM001,lang-mo-da,Đá xanh Thanh Hóa,81 x 127 cm,Thiết kế cổ kính tinh xảo,Mô tả chi tiết về sản phẩm bằng Markdown...,15000000,1,true,published,Lăng mộ đá xanh Thanh Hóa cao cấp,Chuyên sản xuất lăng mộ đá xanh mạ vàng 24K,https://images.langmodaquangtri.com/products/main/avatar.jpg,https://images.langmodaquangtri.com/products/gallery/img1.jpg;https://images.langmodaquangtri.com/products/gallery/img2.jpg\n" +
+      "Mộ đá tròn mạ vàng,,MD002,mo-da-tron,Đá xanh nguyên khối,Đường kính 127 cm,Mộ tròn mạ vàng phong thủy,Mô tả chi tiết tại đây...,25000000,2,false,draft,Mộ đá tròn mạ vàng phong thủy,Sản xuất mộ tròn mạ vàng đẹp Ninh Vân,https://images.langmodaquangtri.com/products/main/avatar2.jpg,";
 
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

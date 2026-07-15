@@ -1,28 +1,63 @@
 import React, { useState } from "react";
-import { Menu, X, Phone, Heart, MapPin, Sparkles } from "lucide-react";
-import { ViewType } from "../types";
+import { Menu, X, Phone, Heart, MapPin, Sparkles, ChevronDown } from "lucide-react";
+import { ViewType, Category } from "../types";
 
 interface HeaderProps {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
+  categories?: Category[];
 }
 
-export default function Header({ currentView, onNavigate }: HeaderProps) {
+export default function Header({ currentView, onNavigate, categories }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
+
+  const toggleMenu = (label: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
+  const highlightCategories = categories ? categories.filter(c => c.highlight) : [];
+  
+  const postCategories = [
+    { label: "Kiến thức phong thủy", view: { type: "posts", categorySlug: "knowledge" } as ViewType, path: "/chuyen-muc/knowledge" },
+    { label: "Tư vấn thiết kế", view: { type: "posts", categorySlug: "consulting" } as ViewType, path: "/chuyen-muc/consulting" },
+    { label: "Tin tức sự kiện", view: { type: "posts", categorySlug: "news" } as ViewType, path: "/chuyen-muc/news" },
+    { label: "Phong thủy lăng mộ", view: { type: "posts", categorySlug: "feng_shui" } as ViewType, path: "/chuyen-muc/feng_shui" },
+  ];
 
   const navItems = [
     { label: "TRANG CHỦ", view: { type: "home" } as ViewType, path: "/" },
-    { label: "SẢN PHẨM", view: { type: "products" } as ViewType, path: "/san-pham" },
+    { 
+      label: "SẢN PHẨM", 
+      view: { type: "products" } as ViewType, 
+      path: "/san-pham",
+      dropdown: highlightCategories.map(cat => ({
+        label: cat.name,
+        view: { type: "products", categorySlug: cat.slug } as ViewType,
+        path: `/danh-muc/${cat.slug}`
+      }))
+    },
     { label: "DỰ ÁN / CÔNG TRÌNH", view: { type: "projects" } as ViewType, path: "/du-an" },
-    { label: "BÀI VIẾT", view: { type: "posts" } as ViewType, path: "/bai-viet" },
+    { 
+      label: "BÀI VIẾT", 
+      view: { type: "posts" } as ViewType, 
+      path: "/bai-viet",
+      dropdown: postCategories
+    },
     { label: "LIÊN HỆ", view: { type: "contact" } as ViewType, path: "/lien-he" },
   ];
 
   const isActive = (itemView: ViewType) => {
     if (currentView.type === itemView.type) {
-      if (currentView.type === "products" && itemView.type === "products") {
-        return !currentView.categorySlug;
-      }
+      return true;
+    }
+    if (currentView.type === "product-detail" && itemView.type === "products") {
+      return true;
+    }
+    if (currentView.type === "post-detail" && itemView.type === "posts") {
       return true;
     }
     return false;
@@ -45,8 +80,8 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
             className="flex items-center cursor-pointer group"
           >
             <img 
-              src="https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/logo/Layer%201.png" 
-              alt="Đá Tâm An" 
+              src="https://images.langmodaquangtri.com/logo/Layer%201.png" 
+              alt="LĂNG MỘ ĐÁ QUẢNG TRỊ" 
               className="h-14 w-auto transition-transform group-hover:scale-105 object-contain"
             />
           </div>
@@ -54,21 +89,41 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navItems.map((item, idx) => (
-              <a
-                key={idx}
-                href={item.path}
-                onClick={(e) => handleNavClick(item.view, e)}
-                className={`font-serif text-[15px] font-bold tracking-wider transition-all relative py-2 ${
-                  isActive(item.view)
-                    ? "text-deep-navy font-extrabold"
-                    : "text-deep-navy/70 hover:text-deep-navy"
-                }`}
-              >
-                {item.label}
-                {isActive(item.view) && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-clay" />
+              <div key={idx} className="relative group py-6">
+                <a
+                  href={item.path}
+                  onClick={(e) => handleNavClick(item.view, e)}
+                  className={`font-serif text-[15px] font-bold tracking-wider transition-all relative py-2 flex items-center gap-1 ${
+                    isActive(item.view)
+                      ? "text-deep-navy font-extrabold"
+                      : "text-deep-navy/70 hover:text-deep-navy"
+                  }`}
+                >
+                  {item.label}
+                  {item.dropdown && item.dropdown.length > 0 && (
+                    <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:translate-y-0.5 transition-transform" />
+                  )}
+                  {isActive(item.view) && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-deep-navy" />
+                  )}
+                </a>
+
+                {/* Dropdown Menu */}
+                {item.dropdown && item.dropdown.length > 0 && (
+                  <div className="absolute top-[85%] left-0 mt-1 w-64 bg-light-cream border border-deep-navy/15 shadow-xl rounded-sm py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+                    {item.dropdown.map((subItem, subIdx) => (
+                      <a
+                        key={subIdx}
+                        href={subItem.path}
+                        onClick={(e) => handleNavClick(subItem.view, e)}
+                        className="block px-4 py-2.5 text-[13.5px] font-serif font-bold text-deep-navy/85 hover:text-red-clay hover:bg-cream/45 transition-all border-b border-deep-navy/5 last:border-b-0"
+                      >
+                        {subItem.label}
+                      </a>
+                    ))}
+                  </div>
                 )}
-              </a>
+              </div>
             ))}
           </nav>
 
@@ -101,20 +156,74 @@ export default function Header({ currentView, onNavigate }: HeaderProps) {
       {isOpen && (
         <div className="lg:hidden border-t border-deep-navy/10 bg-light-cream/95 backdrop-blur-md transition-all">
           <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3">
-            {navItems.map((item, idx) => (
-              <a
-                key={idx}
-                href={item.path}
-                onClick={(e) => handleNavClick(item.view, e)}
-                className={`block px-4 py-3 rounded-none font-serif text-[15px] font-bold tracking-wider ${
-                  isActive(item.view)
-                    ? "bg-cream text-deep-navy"
-                    : "text-deep-navy hover:bg-cream hover:text-deep-navy"
-                }`}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item, idx) => {
+              const isItemActive = isActive(item.view);
+              const hasDropdown = item.dropdown && item.dropdown.length > 0;
+              const isExpanded = !!expandedMenus[item.label];
+              return (
+                <div key={idx} className="space-y-0.5">
+                  <div className="flex items-center justify-between w-full">
+                    <a
+                      href={item.path}
+                      onClick={(e) => {
+                        if (hasDropdown) {
+                          e.preventDefault();
+                          toggleMenu(item.label);
+                        } else {
+                          handleNavClick(item.view, e);
+                        }
+                      }}
+                      className={`flex-grow block px-4 py-3 rounded-none font-serif text-[15px] font-bold tracking-wider ${
+                        isItemActive
+                          ? "bg-cream text-deep-navy"
+                          : "text-deep-navy hover:bg-cream hover:text-deep-navy"
+                      }`}
+                    >
+                      {item.label}
+                    </a>
+                    {hasDropdown && (
+                      <button
+                        onClick={() => toggleMenu(item.label)}
+                        className="px-4 py-3 text-deep-navy hover:text-red-clay focus:outline-none"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Mobile Submenu accordions */}
+                  {hasDropdown && isExpanded && (
+                    <div className="pl-6 pr-4 py-1 space-y-1.5 bg-cream/25 border-l-2 border-red-clay/20 ml-4 mb-2">
+                      <a
+                        href={item.path}
+                        onClick={(e) => handleNavClick(item.view, e)}
+                        className="block py-1.5 text-[13.5px] font-serif font-bold tracking-wide text-deep-navy/70 hover:text-deep-navy italic"
+                      >
+                        • Xem tất cả {item.label === "SẢN PHẨM" ? "sản phẩm" : "bài viết"}
+                      </a>
+                      {item.dropdown.map((subItem, subIdx) => {
+                        const isSubActive = currentView.type === subItem.view.type && 
+                          ("categorySlug" in currentView && "categorySlug" in subItem.view && currentView.categorySlug === subItem.view.categorySlug);
+                        return (
+                          <a
+                            key={subIdx}
+                            href={subItem.path}
+                            onClick={(e) => handleNavClick(subItem.view, e)}
+                            className={`block py-1.5 text-[13.5px] font-serif font-bold tracking-wide ${
+                              isSubActive
+                                ? "text-red-clay"
+                                : "text-deep-navy/70 hover:text-deep-navy"
+                            }`}
+                          >
+                            • {subItem.label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <div className="pt-4 pb-2 border-t border-deep-navy/10 px-4">
               <a
                 href="/lien-he"

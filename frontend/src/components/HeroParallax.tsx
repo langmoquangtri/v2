@@ -15,10 +15,10 @@ export function HeroParallax() {
   const [videoSrc, setVideoSrc] = useState(() => {
     if (typeof window !== "undefined") {
       return window.innerWidth < 1024
-        ? "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/hero%20banner%20mobile.mov"
-        : "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/hero%20banner.mov";
+        ? "https://images.langmodaquangtri.com/hero%20banner%20mobile.mov"
+        : "https://images.langmodaquangtri.com/hero%20banner.mov";
     }
-    return "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/hero%20banner.mov";
+    return "https://images.langmodaquangtri.com/hero%20banner.mov";
   });
 
   const targetTimeRef = useRef(0);
@@ -44,8 +44,8 @@ export function HeroParallax() {
       const isMobileTablet = window.innerWidth < 1024;
       setIsMobile(isMobileTablet);
       const targetSrc = isMobileTablet
-        ? "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/hero%20banner%20mobile.mov"
-        : "https://pub-74197d4c4a464d7791ddee7a56de9461.r2.dev/hero%20banner.mov";
+        ? "https://images.langmodaquangtri.com/hero%20banner%20mobile.mov"
+        : "https://images.langmodaquangtri.com/hero%20banner.mov";
       setVideoSrc(targetSrc);
     };
 
@@ -270,9 +270,9 @@ export function HeroParallax() {
     }
   }
 
-  // Next section's background color is light cream (#F3F0E3) so we use that for transition
+  // Next section's background color is white so we use that for transition
   const bottomGradientStyle = {
-    background: `linear-gradient(to bottom, transparent 0%, rgba(243, 240, 227, 0.25) 60%, #F3F0E3 100%)`,
+    background: `linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.25) 60%, #ffffff 100%)`,
     opacity: bottomGradientOpacity,
   };
 
@@ -297,7 +297,6 @@ export function HeroParallax() {
           preload="auto"
           autoPlay={isMobile}
           loop={isMobile}
-          poster="https://images.unsplash.com/photo-1590069261209-f8e9b8642343?q=80&w=1600&auto=format&fit=crop"
           onLoadedMetadata={handleLoadedMetadata}
           className="w-full h-full object-cover object-center absolute inset-0 z-0 bg-stone-gray transition-transform duration-75 ease-out"
           style={{

@@ -32,6 +32,21 @@ service cloud.firestore {
       allow write: if signedIn();
     }
 
+    match /faqs/{documentId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /testimonials/{documentId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /cta_slides/{documentId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
     match /contact_messages/{documentId} {
       allow create: if true;
       allow read, write: if signedIn();

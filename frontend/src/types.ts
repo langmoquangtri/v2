@@ -15,6 +15,7 @@ export interface Category {
   description: string;
   imageUrl: string;
   iconName: string;
+  highlight?: boolean;
 }
 
 export interface Specification {
@@ -65,6 +66,7 @@ export interface Post {
   shortDescription: string;
   content: string;
   imageUrl: string;
+  category?: string;
 }
 
 export interface FAQ {
@@ -86,12 +88,52 @@ export interface CtaSlide {
   sort_order: number;
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+  active: boolean;
+  sort_order: number;
+}
+
+export interface CoreValue {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  sort_order: number;
+}
+
+export interface BrandIntroduction {
+  id: string;
+  title: string;
+  content: string;
+  image?: string;
+  sort_order: number;
+}
+
+export interface SiteSetting {
+  id: string;
+  key: string;
+  hotline_title: string;
+  hotline_subtitle: string;
+  hotline_phone: string;
+  hotline_secondary_phone?: string;
+  footer_brand_description: string;
+  footer_address: string;
+  facebook_url: string;
+  tiktok_url: string;
+  youtube_url: string;
+}
+
 export type ViewType =
   | { type: "home" }
   | { type: "products"; categorySlug?: string }
   | { type: "product-detail"; slug: string }
   | { type: "projects" }
   | { type: "project-detail"; slug: string }
-  | { type: "posts" }
+  | { type: "posts"; categorySlug?: string }
   | { type: "post-detail"; slug: string }
   | { type: "contact"; productSlug?: string };

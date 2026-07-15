@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import { CoreValue, BrandIntroduction, SiteSetting } from "../types";
 
 // Firebase configuration matching the user's FireCMS project
 export const firebaseConfig = {
@@ -35,7 +36,8 @@ export const fallbackCategories = [
     slug: "bia-mo-da-granite",
     description: "Chất liệu đá granite nhập khẩu cao cấp, độ bóng gương vĩnh cửu, không bị phai màu chữ hay rêu mốc trước thời tiết.",
     imageUrl: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?q=80&w=600&auto=format&fit=crop",
-    iconName: "Feather"
+    iconName: "Feather",
+    highlight: true
   },
   {
     id: "bia-mo-da-xanh-thanh-hoa",
@@ -43,7 +45,8 @@ export const fallbackCategories = [
     slug: "bia-mo-da-xanh-thanh-hoa",
     description: "Đá xanh tự nhiên nguyên khối, thớ mịn, dẻo dai giúp các nét chạm trổ cổ kính rồng phượng vô cùng sắc nét tinh xảo.",
     imageUrl: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?q=80&w=600&auto=format&fit=crop",
-    iconName: "Layers"
+    iconName: "Layers",
+    highlight: true
   },
   {
     id: "mo-da-my-nghe",
@@ -51,7 +54,8 @@ export const fallbackCategories = [
     slug: "mo-da-my-nghe",
     description: "Các mẫu mộ bành, mộ tam sơn, mộ có mái bằng đá xanh tự nhiên được lắp đặt trọn gói chuẩn kích thước phong thủy thước Lỗ Ban.",
     imageUrl: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=600&auto=format&fit=crop",
-    iconName: "Castle"
+    iconName: "Castle",
+    highlight: false
   },
   {
     id: "bia-di-tich-bia-ghi-danh",
@@ -59,7 +63,8 @@ export const fallbackCategories = [
     slug: "bia-di-tich-bia-ghi-danh",
     description: "Sản phẩm phục vụ đền chùa, từ đường dòng họ, bia di tích lịch sử chạm nổi hoa văn tinh tế thể hiện sự tôn nghiêm.",
     imageUrl: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=600&auto=format&fit=crop",
-    iconName: "Award"
+    iconName: "Award",
+    highlight: false
   }
 ];
 
@@ -110,6 +115,7 @@ export async function getCategories() {
         imageUrl: data.image || "",
         iconName,
         active: data.active !== false,
+        highlight: data.highlight === true,
         sort_order: data.sort_order || 0
       };
     });
@@ -268,11 +274,12 @@ export async function getPosts() {
         name: data.title || "",
         slug: data.slug || "",
         date: publishedDate,
-        author: data.author || "Nghệ nhân Đá Tâm An",
+        author: data.author || "Nghệ nhân LĂNG MỘ ĐÁ QUẢNG TRỊ",
         readTime: readTime,
         shortDescription: data.excerpt || "",
         content: content,
         imageUrl: data.cover_image || "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?q=80&w=600&auto=format&fit=crop",
+        category: data.category || "knowledge",
         status: data.status || "draft"
       };
     });
@@ -422,3 +429,214 @@ export async function saveContactMessage(messageData: {
     throw error;
   }
 }
+
+export const fallbackTestimonials = [
+  {
+    id: "testimonial-1",
+    name: "Nguyễn Văn Hoà",
+    role: "Gia chủ - Thanh Hoá",
+    content: "Tôi rất hài lòng với công trình lăng mộ gia tộc mà Đá Tâm An chế tác. Các nét chạm khắc tinh xảo, chất đá xanh tự nhiên nguyên khối rất đẹp. Nghệ nhân tư vấn kích thước chuẩn phong thủy Lỗ Ban vô cùng tận tình.",
+    rating: 5,
+    active: true,
+    sort_order: 1
+  },
+  {
+    id: "testimonial-2",
+    name: "Phạm Thị Tuyết",
+    role: "Khách hàng - Hà Nội",
+    content: "Đơn đặt hàng bia mộ granite từ xa nhưng xưởng làm rất chuyên nghiệp. Chữ khắc sâu, sắc nét, mạ vàng 24K cực kỳ sang trọng. Giao hàng nhanh và đóng gói kỹ lưỡng. Sẽ ủng hộ xưởng lâu dài.",
+    rating: 5,
+    active: true,
+    sort_order: 2
+  },
+  {
+    id: "testimonial-3",
+    name: "Lê Minh Tuấn",
+    role: "Đại diện dòng họ Lê - Ninh Bình",
+    content: "Chân thành cảm ơn tập thể nghệ nhân Đá Tâm An. Việc trùng tu khuôn viên lăng mộ tổ dòng họ được hoàn thành đúng tiến độ, chất lượng đá đồng đều và hoa văn rồng phượng uy nghiêm, chuẩn cổ kính.",
+    rating: 5,
+    active: true,
+    sort_order: 3
+  },
+  {
+    id: "testimonial-4",
+    name: "Trần Thanh Bình",
+    role: "Gia chủ - Quảng Trị",
+    content: "Xưởng tư vấn thiết kế phối cảnh 3D rất trực quan, giúp gia đình dễ dàng hình dung trước khi thi công. Quá trình lắp đặt chuyên nghiệp, cẩn thận từng khớp nối mạch hồ. Rất uy tín!",
+    rating: 5,
+    active: true,
+    sort_order: 4
+  }
+];
+
+export async function getTestimonials() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "testimonials"));
+    if (querySnapshot.empty) return fallbackTestimonials;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name || "",
+        role: data.role || "",
+        content: data.content || "",
+        rating: typeof data.rating === "number" ? data.rating : 5,
+        active: data.active !== false,
+        sort_order: data.sort_order || 0
+      };
+    });
+    const activeTestimonials = docs.filter(t => t.active);
+    activeTestimonials.sort((a, b) => a.sort_order - b.sort_order);
+    return activeTestimonials.length > 0 ? activeTestimonials : fallbackTestimonials;
+  } catch (error) {
+    console.warn("Error fetching testimonials client-side (using fallback):", error);
+    return fallbackTestimonials;
+  }
+}
+
+// ==========================================
+// NEW DYNAMIC HOMEPAGE SECTIONS & SITE SETTINGS
+// ==========================================
+
+export const fallbackCoreValues: CoreValue[] = [
+  {
+    id: "val-1",
+    title: "Nghệ Nhân Làng Nghề Cổ",
+    description: "Chế tác trực tiếp từ phôi đá chuẩn bởi nghệ nhân điêu khắc gia tộc giàu kinh nghiệm Ninh Bình.",
+    iconName: "Award",
+    sort_order: 1
+  },
+  {
+    id: "val-2",
+    title: "Đá Tự Nhiên Nguyên Khối 100%",
+    description: "Sử dụng phôi đá hoa cương nhập khẩu, đá xanh Thanh Hóa nguyên khối tốt nhất, bảo hành nứt vỡ trọn đời.",
+    iconName: "ShieldCheck",
+    sort_order: 2
+  },
+  {
+    id: "val-3",
+    title: "Thiết Kế Thước Lỗ Ban",
+    description: "Hỗ trợ phác thảo bản vẽ 2D hoàn chỉnh chuẩn cung cát Lỗ Ban âm phần, hoàn thiện chuẩn hẹn 3-5 ngày.",
+    iconName: "Clock",
+    sort_order: 3
+  }
+];
+
+export const fallbackBrandIntroductions: BrandIntroduction[] = [
+  {
+    id: "intro-1",
+    title: "Chế tác bằng tâm huyết",
+    content: "Lăng Mộ Đá Quảng Trị chuyên thiết kế và thi công các công trình tâm linh bằng đá tự nhiên nguyên khối, được chế tác tỉ mỉ bởi những nghệ nhân giàu kinh nghiệm.",
+    sort_order: 1
+  },
+  {
+    id: "intro-2",
+    title: "Thiết kế chuẩn phong thủy",
+    content: "Mỗi công trình đều được nghiên cứu kỹ về kích thước, hướng đặt, bố cục và hoa văn, bảo đảm sự hài hòa giữa kiến trúc truyền thống và yếu tố phong thủy.",
+    sort_order: 2
+  },
+  {
+    id: "intro-3",
+    title: "Bền vững cùng thời gian",
+    content: "Nguồn đá chất lượng cao được tuyển chọn kỹ lưỡng, có độ bền vượt trội trước thời tiết, giúp công trình giữ được vẻ trang nghiêm qua nhiều thế hệ.",
+    sort_order: 3
+  },
+  {
+    id: "intro-4",
+    title: "Gìn giữ giá trị gia tộc",
+    content: "Không chỉ kiến tạo nơi an nghỉ, Lăng Mộ Đá Quảng Trị còn mong muốn gìn giữ lòng hiếu kính, niềm tự hào và những giá trị tinh thần của mỗi gia đình Việt.",
+    sort_order: 4
+  }
+];
+
+export const fallbackSiteSettings: SiteSetting = {
+  id: "main_settings",
+  key: "main_settings",
+  hotline_title: "Quý Khách Cần Tư Vấn Thiết Kế Mẫu Bia Mộ Đá?",
+  hotline_subtitle: "Đội ngũ thiết kế hỗ trợ tư vấn phong thủy Lỗ Ban, chạm hoa sen, rồng chầu, mạ vàng 24K miễn phí. Cung cấp báo giá xưởng tối ưu nhất, vận chuyển toàn quốc.",
+  hotline_phone: "0987.654.321",
+  hotline_secondary_phone: "0987.654.321",
+  footer_brand_description: "Chúng tôi tự hào kế thừa nét tinh hoa chạm khắc đá độc bản hàng trăm năm từ Ninh Bình. Cam kết cung cấp các sản phẩm bia mộ đá Granite, bia đá xanh tự nhiên trường tồn vĩnh cửu.",
+  footer_address: "Địa chỉ: Làng nghề đá mỹ nghệ xã Ninh Vân, huyện Hoa Lư, tỉnh Ninh Bình.\nHotline chăm sóc khách hàng: 0987.654.321\nEmail: lienhe@dataman.vn",
+  facebook_url: "https://facebook.com",
+  tiktok_url: "https://tiktok.com",
+  youtube_url: "https://youtube.com"
+};
+
+export async function getCoreValues(): Promise<CoreValue[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, "core_values"));
+    if (querySnapshot.empty) return fallbackCoreValues;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || "",
+        description: data.description || "",
+        iconName: data.icon_name || "Award",
+        sort_order: data.sort_order || 0,
+        active: data.active !== false
+      };
+    });
+    const activeValues = docs.filter(v => v.active);
+    activeValues.sort((a, b) => a.sort_order - b.sort_order);
+    return activeValues.length > 0 ? activeValues : fallbackCoreValues;
+  } catch (error) {
+    console.warn("Error fetching core values client-side (using fallback):", error);
+    return fallbackCoreValues;
+  }
+}
+
+export async function getBrandIntroductions(): Promise<BrandIntroduction[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, "brand_introductions"));
+    if (querySnapshot.empty) return fallbackBrandIntroductions;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || "",
+        content: data.content || "",
+        image: data.image || undefined,
+        sort_order: data.sort_order || 0,
+        active: data.active !== false
+      };
+    });
+    const activeIntros = docs.filter(i => i.active);
+    activeIntros.sort((a, b) => a.sort_order - b.sort_order);
+    return activeIntros.length > 0 ? activeIntros : fallbackBrandIntroductions;
+  } catch (error) {
+    console.warn("Error fetching brand introductions client-side (using fallback):", error);
+    return fallbackBrandIntroductions;
+  }
+}
+
+export async function getSiteSettings(): Promise<SiteSetting> {
+  try {
+    const querySnapshot = await getDocs(collection(db, "site_settings"));
+    if (querySnapshot.empty) return fallbackSiteSettings;
+    const docs = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        key: data.key || "main_settings",
+        hotline_title: data.hotline_title || fallbackSiteSettings.hotline_title,
+        hotline_subtitle: data.hotline_subtitle || fallbackSiteSettings.hotline_subtitle,
+        hotline_phone: data.hotline_phone || fallbackSiteSettings.hotline_phone,
+        hotline_secondary_phone: data.hotline_secondary_phone || data.hotline_phone || fallbackSiteSettings.hotline_secondary_phone,
+        footer_brand_description: data.footer_brand_description || fallbackSiteSettings.footer_brand_description,
+        footer_address: data.footer_address || fallbackSiteSettings.footer_address,
+        facebook_url: data.facebook_url || fallbackSiteSettings.facebook_url,
+        tiktok_url: data.tiktok_url || fallbackSiteSettings.tiktok_url,
+        youtube_url: data.youtube_url || fallbackSiteSettings.youtube_url,
+        active: data.active !== false
+      };
+    });
+    const activeSettings = docs.find(s => s.active);
+    return activeSettings || fallbackSiteSettings;
+  } catch (error) {
+    console.warn("Error fetching site settings client-side (using fallback):", error);
+    return fallbackSiteSettings;
+  }
+}
+

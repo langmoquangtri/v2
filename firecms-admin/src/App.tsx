@@ -32,10 +32,16 @@ import { CenteredView } from "@firecms/ui";
 
 import { bannersCollection } from "./collections/banners";
 import { categoriesCollection } from "./collections/categories";
+import { ctaSlidesCollection } from "./collections/cta_slides";
+import { faqsCollection } from "./collections/faqs";
 import { mediaCollection } from "./collections/media";
 import { postsCollection } from "./collections/posts";
 import { productsCollection } from "./collections/products";
 import { projectsCollection } from "./collections/projects";
+import { testimonialsCollection } from "./collections/testimonials";
+import { coreValuesCollection } from "./collections/core_values";
+import { brandIntroductionsCollection } from "./collections/brand_introductions";
+import { siteSettingsCollection } from "./collections/site_settings";
 import { firebaseConfig } from "./firebase_config";
 import { buildR2StorageSource } from "./storage/r2_storage_source";
 
@@ -60,6 +66,12 @@ function App() {
       projectsCollection,
       postsCollection,
       bannersCollection,
+      ctaSlidesCollection,
+      faqsCollection,
+      testimonialsCollection,
+      coreValuesCollection,
+      brandIntroductionsCollection,
+      siteSettingsCollection,
       mediaCollection,
     ],
     []

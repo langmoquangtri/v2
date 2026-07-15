@@ -5,6 +5,9 @@ import {
   Mail, 
   Clock, 
   ChevronRight, 
+  ChevronLeft, 
+  ChevronDown,
+  ChevronUp,
   ArrowLeft, 
   Star, 
   CheckCircle2, 
@@ -26,8 +29,8 @@ import {
 import Header from "./components/Header";
 import { HeroParallax } from "./components/HeroParallax";
 import CtaFaqSection from "./components/CtaFaqSection";
-import { Banner, Category, Product, Project, Post, ViewType, FAQ, CtaSlide } from "./types";
-import { getBanners, getCategories, getProducts, getProjects, getPosts, saveContactMessage, getFAQs, getCtaSlides } from "./lib/firebase";
+import { Banner, Category, Product, Project, Post, ViewType, FAQ, CtaSlide, Testimonial, CoreValue, BrandIntroduction, SiteSetting } from "./types";
+import { getBanners, getCategories, getProducts, getProjects, getPosts, saveContactMessage, getFAQs, getCtaSlides, getTestimonials, getCoreValues, getBrandIntroductions, getSiteSettings } from "./lib/firebase";
 
 function getYoutubeVideoId(url: string): string | null {
   const match = url.match(
@@ -72,6 +75,10 @@ function parseLocation(): ViewType {
   if (path === "/bai-viet" || path === "/bai-viet/") {
     return { type: "posts" };
   }
+  if (path.startsWith("/chuyen-muc/")) {
+    const slug = path.slice(12).replace(/\/$/, "");
+    return { type: "posts", categorySlug: slug };
+  }
   if (path.startsWith("/bai-viet/")) {
     const slug = path.slice(10).replace(/\/$/, "");
     return { type: "post-detail", slug };
@@ -81,6 +88,18 @@ function parseLocation(): ViewType {
     return { type: "contact", productSlug };
   }
   return { type: "home" };
+}
+
+function getCoreValueIcon(iconName: string) {
+  switch (iconName) {
+    case "Award": return <Award className="w-7 h-7" />;
+    case "ShieldCheck": return <ShieldCheck className="w-7 h-7" />;
+    case "Clock": return <Clock className="w-7 h-7" />;
+    case "Heart": return <Heart className="w-7 h-7" />;
+    case "Sparkles": return <Sparkles className="w-7 h-7" />;
+    case "CheckCircle2": return <CheckCircle2 className="w-7 h-7" />;
+    default: return <Award className="w-7 h-7" />;
+  }
 }
 
 export default function App() {
@@ -101,6 +120,10 @@ export default function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [ctaSlides, setCtaSlides] = useState<CtaSlide[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [coreValues, setCoreValues] = useState<CoreValue[]>([]);
+  const [brandIntroductions, setBrandIntroductions] = useState<BrandIntroduction[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSetting | null>(null);
   
   // Detail views state
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
@@ -113,6 +136,31 @@ export default function App() {
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
+
+  const [currentCatIndex, setCurrentCatIndex] = useState(0);
+
+  useEffect(() => {
+    if (categories.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentCatIndex((prev) => (prev + 1) % categories.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [categories.length]);
+
+  const [currentProdIndex, setCurrentProdIndex] = useState(0);
+
+  useEffect(() => {
+    if (!homepageData || homepageData.products.length <= 1) return;
+    const maxProductsCount = 8;
+    const totalSlidesCount = Math.min(homepageData.products.length, maxProductsCount);
+    
+    const timer = setInterval(() => {
+      setCurrentProdIndex((prev) => (prev + 1) % totalSlidesCount);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [homepageData?.products?.length]);
+
+  const [activeIntroIndex, setActiveIntroIndex] = useState<number | null>(0);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -159,6 +207,10 @@ export default function App() {
         const productsData = await getProducts(categoriesData);
         const faqsData = await getFAQs();
         const ctaSlidesData = await getCtaSlides();
+        const testimonialsData = await getTestimonials();
+        const coreValuesData = await getCoreValues();
+        const brandIntrosData = await getBrandIntroductions();
+        const siteSettingsData = await getSiteSettings();
  
         setHomepageData({
           banners: bannersData,
@@ -174,6 +226,10 @@ export default function App() {
         setPosts(postsData);
         setFaqs(faqsData);
         setCtaSlides(ctaSlidesData);
+        setTestimonials(testimonialsData);
+        setCoreValues(coreValuesData);
+        setBrandIntroductions(brandIntrosData);
+        setSiteSettings(siteSettingsData);
 
         setError(null);
       } catch (err: any) {
@@ -199,7 +255,7 @@ export default function App() {
     } else if (view.type === "project-detail") {
       path = `/du-an/${view.slug}`;
     } else if (view.type === "posts") {
-      path = "/bai-viet";
+      path = view.categorySlug ? `/chuyen-muc/${view.categorySlug}` : "/bai-viet";
     } else if (view.type === "post-detail") {
       path = `/bai-viet/${view.slug}`;
     } else if (view.type === "contact") {
@@ -386,7 +442,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-beige flex flex-col justify-center items-center py-12 px-4">
         <div className="w-16 h-16 border-4 border-clay border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="font-serif italic text-stone-charcoal/70 text-lg">Đá Tâm An - Tinh Hoa Chạm Khắc Đang Khởi Tạo...</p>
+        <p className="font-serif italic text-stone-charcoal/70 text-lg">LĂNG MỘ ĐÁ QUẢNG TRỊ - Tinh Hoa Chạm Khắc Đang Khởi Tạo...</p>
       </div>
     );
   }
@@ -394,7 +450,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-beige text-stone-charcoal selection:bg-clay selection:text-white">
       {/* Universal Header */}
-      <Header currentView={currentView} onNavigate={navigate} />
+      <Header currentView={currentView} onNavigate={navigate} categories={categories} />
 
       {/* Main Content Area */}
       <main className="flex-grow">
@@ -417,48 +473,107 @@ export default function App() {
             <HeroParallax />
 
             {/* Core Values Section */}
-            <section className="py-12 bg-deep-navy border-b border-dark-navy">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="relative py-12 bg-deep-navy border-b border-dark-navy overflow-hidden">
+              {/* Background Ornament Image */}
+              <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+                <img 
+                  src="https://images.langmodaquangtri.com/Artboard%202.svg" 
+                  alt="Background pattern" 
+                  className="h-full w-auto max-w-none object-contain opacity-15" 
+                />
+              </div>
+
+              <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                  <div className="p-4 flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div className="p-3 bg-white/10 text-white rounded-full">
-                      <Award className="w-7 h-7" />
+                  {coreValues.map((val) => (
+                    <div key={val.id} className="p-4 flex flex-col md:flex-row items-center md:items-start gap-4">
+                      <div className="p-3 bg-white/10 text-white rounded-full shrink-0">
+                        {getCoreValueIcon(val.iconName)}
+                      </div>
+                      <div>
+                        <h4 className="font-serif font-bold text-base text-white mb-1">{val.title}</h4>
+                        <p className="text-xs text-white/80 font-sans">
+                          {val.description}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-serif font-bold text-base text-white mb-1">Nghệ Nhân Làng Nghề Cổ</h4>
-                      <p className="text-xs text-white/80 font-sans">
-                        Chế tác trực tiếp từ phôi đá chuẩn bởi nghệ nhân điêu khắc gia tộc giàu kinh nghiệm Ninh Bình.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4 flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div className="p-3 bg-white/10 text-white rounded-full">
-                      <ShieldCheck className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <h4 className="font-serif font-bold text-base text-white mb-1">Đá Tự Nhiên Nguyên Khối 100%</h4>
-                      <p className="text-xs text-white/80 font-sans">
-                        Sử dụng phôi đá hoa cương nhập khẩu, đá xanh Thanh Hóa nguyên khối tốt nhất, bảo hành nứt vỡ trọn đời.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4 flex flex-col md:flex-row items-center md:items-start gap-4">
-                    <div className="p-3 bg-white/10 text-white rounded-full">
-                      <Clock className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <h4 className="font-serif font-bold text-base text-white mb-1">Thiết Kế Thước Lỗ Ban</h4>
-                      <p className="text-xs text-white/80 font-sans">
-                        Hỗ trợ phác thảo bản vẽ 2D hoàn chỉnh chuẩn cung cát Lỗ Ban âm phần, hoàn thiện chuẩn hẹn 3-5 ngày.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </section>
 
-            {/* Custom CTA & FAQ Section */}
-            <CtaFaqSection faqs={faqs} ctaSlides={ctaSlides} onContactClick={() => navigate({ type: "contact" })} />
+            {/* Short Introduction Section (Giới thiệu ngắn) */}
+            <section className="py-20 bg-light-cream/40 border-b border-deep-navy/5">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                  
+                  {/* Left Column: Introduction Accordion */}
+                  <div className="lg:col-span-7 space-y-8">
+                    <div>
+                      <span className="text-xs uppercase tracking-[0.2em] text-red-clay font-bold font-mono">Bản Sắc Thương Hiệu</span>
+                      <h3 className="text-3xl sm:text-4xl font-serif font-extrabold mt-2 text-deep-navy uppercase tracking-tight leading-tight">
+                        giới thiệu - LĂNG MỘ ĐÁ QUẢNG TRỊ
+                      </h3>
+                      <div className="w-16 h-[1.5px] bg-red-clay mt-4" />
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      {brandIntroductions.map((item, idx) => {
+                        const isOpen = activeIntroIndex === idx;
+                        return (
+                          <div 
+                            key={item.id} 
+                            className="border border-deep-navy/10 bg-white p-5 rounded-none transition-all duration-300 hover:shadow-xs"
+                          >
+                            <button
+                              onClick={() => setActiveIntroIndex(isOpen ? null : idx)}
+                              className="w-full flex justify-between items-center text-left group focus:outline-none"
+                              aria-expanded={isOpen}
+                            >
+                              <span className={`font-serif font-bold text-base transition-colors uppercase tracking-wide ${isOpen ? "text-red-clay" : "text-deep-navy group-hover:text-red-clay"}`}>
+                                {item.title}
+                              </span>
+                              <div className="w-6 h-6 rounded-full bg-deep-navy/5 flex items-center justify-center text-deep-navy group-hover:bg-red-clay/5 group-hover:text-red-clay transition-all duration-300">
+                                {isOpen ? (
+                                  <ChevronUp className="w-4 h-4" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4" />
+                                )}
+                              </div>
+                            </button>
+                            
+                            <div 
+                              className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                                isOpen ? "max-h-60 opacity-100 mt-4 pt-3 border-t border-deep-navy/5" : "max-h-0 opacity-0 pointer-events-none"
+                              }`}
+                            >
+                              <p className="text-sm text-charcoal/80 leading-relaxed font-sans whitespace-pre-line">
+                                {item.content}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Image */}
+                  <div className="lg:col-span-5 w-full">
+                    <div className="relative w-full overflow-hidden group">
+                      <img 
+                        src={brandIntroductions.find(i => i.image)?.image || "https://images.langmodaquangtri.com/tra%CC%A3m.webp"} 
+                        alt="Trạm chế tác Lăng Mộ Đá Quảng Trị" 
+                        className="w-full h-auto filter brightness-[0.97] contrast-[1.01] transition-transform duration-[1200ms] group-hover:scale-105"
+                      />
+                    </div>
+                    <p className="text-center text-[10px] text-charcoal/50 font-mono tracking-wider mt-3 uppercase">
+                      TRẠM CHẾ TÁC LĂNG MỘ ĐÁ QUẢNG TRỊ
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            </section>
 
             {/* Categories Division (Danh mục nổi bật) */}
             <section className="py-20 px-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -468,46 +583,276 @@ export default function App() {
                 <div className="w-16 h-[1.5px] bg-red-clay mx-auto mt-4" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {homepageData.categories.map((cat) => (
-                  <div 
-                    key={cat.id}
-                    onClick={() => navigate({ type: "products", categorySlug: cat.slug })}
-                    className="group cursor-pointer bg-light-cream border border-deep-navy/10 hover:border-red-clay/35 p-5 rounded-none transition-all duration-500 hover:shadow-xs flex flex-col justify-between text-left"
-                  >
-                    <div>
-                      {/* Elegant Sharp Editorial Image Frame for CMS Uploaded Images */}
-                      <div className="w-full aspect-[4/3] mb-5 overflow-hidden relative bg-cream border border-deep-navy/5">
-                        {(cat.imageUrl || (cat as any).image) ? (
-                          <img 
-                            src={cat.imageUrl || (cat as any).image} 
-                            alt={cat.name} 
-                            className="w-full h-full object-cover filter brightness-[0.97] contrast-[1.01] group-hover:scale-105 transition-transform duration-[1200ms]"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-deep-navy/5">
-                            {getCategoryIcon(cat.iconName)}
+              {(() => {
+                const maxCategoriesCount = 8;
+                const hasMoreCategories = homepageData.categories.length > maxCategoriesCount;
+                const displayedCategories = hasMoreCategories 
+                  ? homepageData.categories.slice(0, maxCategoriesCount - 1)
+                  : homepageData.categories;
+                
+                const mobileCategoriesList = hasMoreCategories
+                  ? [...displayedCategories, { id: "view-more-special", name: "Xem thêm", description: "Khám phá tất cả các danh mục sản phẩm của chúng tôi", iconName: "Sparkles", isSpecialViewMore: true }]
+                  : homepageData.categories;
+
+                return (
+                  <>
+                    {/* Desktop view: Grid layout */}
+                    <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-8">
+                      {displayedCategories.map((cat) => (
+                        <div 
+                          key={cat.id}
+                          onClick={() => navigate({ type: "products", categorySlug: cat.slug })}
+                          className="group cursor-pointer bg-light-cream border border-deep-navy/10 hover:border-red-clay/35 p-5 rounded-none transition-all duration-500 hover:shadow-xs flex flex-col justify-between text-left"
+                        >
+                          <div>
+                            {/* Elegant Sharp Editorial Image Frame for CMS Uploaded Images */}
+                            <div className="w-full aspect-[4/3] mb-5 overflow-hidden relative bg-cream border border-deep-navy/5">
+                              {(cat.imageUrl || (cat as any).image) ? (
+                                <img 
+                                  src={cat.imageUrl || (cat as any).image} 
+                                  alt={cat.name} 
+                                  className="w-full h-full object-cover filter brightness-[0.97] contrast-[1.01] group-hover:scale-105 transition-transform duration-[1200ms]"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-deep-navy/5">
+                                  {getCategoryIcon(cat.iconName)}
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-deep-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            </div>
+
+                            <h4 className="font-serif font-bold text-base text-deep-navy mb-2 group-hover:text-red-clay transition-colors uppercase tracking-wide">
+                              {cat.name}
+                            </h4>
+                            <p className="text-xs text-charcoal/75 font-sans line-clamp-3 leading-relaxed">
+                              {cat.description}
+                            </p>
                           </div>
-                        )}
-                        <div className="absolute inset-0 bg-deep-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          
+                          <div className="mt-5 pt-3 border-t border-deep-navy/5 flex items-center justify-between">
+                            <span className="text-[10px] font-mono tracking-widest text-red-clay font-bold uppercase">
+                              KHÁM PHÁ →
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-red-clay transform translate-x-0 group-hover:translate-x-1.5 transition-transform duration-300" />
+                          </div>
+                        </div>
+                      ))}
+
+                      {hasMoreCategories && (
+                        <div 
+                          onClick={() => navigate({ type: "products" })}
+                          className="group cursor-pointer bg-light-cream border border-dashed border-red-clay/40 hover:border-red-clay hover:bg-cream/25 p-5 rounded-none transition-all duration-500 hover:shadow-xs flex flex-col justify-between text-center items-center min-h-[320px]"
+                        >
+                          <div className="flex-grow flex flex-col justify-center items-center py-8">
+                            <div className="w-16 h-16 rounded-full bg-red-clay/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                              <Sparkles className="w-8 h-8 text-red-clay" />
+                            </div>
+                            <h4 className="font-serif font-extrabold text-lg text-deep-navy mb-2 group-hover:text-red-clay transition-colors uppercase tracking-wide">
+                              Xem Thêm
+                            </h4>
+                            <p className="text-xs text-charcoal/75 font-sans px-4">
+                              Khám phá toàn bộ danh mục sản phẩm lăng mộ đá mỹ nghệ cao cấp của chúng tôi.
+                            </p>
+                          </div>
+                          
+                          <div className="w-full pt-3 border-t border-deep-navy/5 flex items-center justify-center gap-1.5 text-[10px] font-mono tracking-widest text-red-clay font-bold uppercase">
+                            TẤT CẢ SẢN PHẨM <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Mobile view: Horizontal Smooth Auto-sliding Track with Premium Controls */}
+                    <div className="block sm:hidden relative px-2">
+                      <div className="relative overflow-hidden w-full">
+                        <div 
+                          className="flex transition-transform duration-500 ease-in-out"
+                          style={{ transform: `translateX(-${currentCatIndex * 100}%)` }}
+                        >
+                          {mobileCategoriesList.map((cat: any) => {
+                            if (cat.isSpecialViewMore) {
+                              return (
+                                <div 
+                                  key="view-more-special"
+                                  className="w-full shrink-0 px-2"
+                                >
+                                  <div 
+                                    onClick={() => navigate({ type: "products" })}
+                                    className="group cursor-pointer bg-light-cream border border-dashed border-red-clay/40 hover:border-red-clay hover:bg-cream/25 p-5 rounded-none transition-all duration-500 hover:shadow-xs flex flex-col justify-between text-center items-center h-full min-h-[320px]"
+                                  >
+                                    <div className="flex-grow flex flex-col justify-center items-center py-8">
+                                      <div className="w-16 h-16 rounded-full bg-red-clay/5 flex items-center justify-center mb-4">
+                                        <Sparkles className="w-8 h-8 text-red-clay" />
+                                      </div>
+                                      <h4 className="font-serif font-extrabold text-lg text-deep-navy mb-2 uppercase tracking-wide">
+                                        Xem Thêm
+                                      </h4>
+                                      <p className="text-xs text-charcoal/75 font-sans px-4">
+                                        Khám phá toàn bộ danh mục sản phẩm lăng mộ đá mỹ nghệ cao cấp.
+                                      </p>
+                                    </div>
+                                    
+                                    <div className="w-full pt-3 border-t border-deep-navy/5 flex items-center justify-center gap-1.5 text-[10px] font-mono tracking-widest text-red-clay font-bold uppercase">
+                                      TẤT CẢ SẢN PHẨM <ChevronRight className="w-4 h-4" />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div 
+                                key={cat.id}
+                                className="w-full shrink-0 px-2"
+                              >
+                                <div 
+                                  onClick={() => navigate({ type: "products", categorySlug: cat.slug })}
+                                  className="group cursor-pointer bg-light-cream border border-deep-navy/10 hover:border-red-clay/35 p-5 rounded-none transition-all duration-500 hover:shadow-xs flex flex-col justify-between text-left h-full"
+                                >
+                                  <div>
+                                    {/* Elegant Sharp Editorial Image Frame for CMS Uploaded Images */}
+                                    <div className="w-full aspect-[4/3] mb-5 overflow-hidden relative bg-cream border border-deep-navy/5">
+                                      {(cat.imageUrl || (cat as any).image) ? (
+                                        <img 
+                                          src={cat.imageUrl || (cat as any).image} 
+                                          alt={cat.name} 
+                                          className="w-full h-full object-cover filter brightness-[0.97] contrast-[1.01] group-hover:scale-105 transition-transform duration-[1200ms]"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-deep-navy/5">
+                                          {getCategoryIcon(cat.iconName)}
+                                        </div>
+                                      )}
+                                      <div className="absolute inset-0 bg-deep-navy/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    </div>
+
+                                    <h4 className="font-serif font-bold text-base text-deep-navy mb-2 group-hover:text-red-clay transition-colors uppercase tracking-wide">
+                                      {cat.name}
+                                    </h4>
+                                    <p className="text-xs text-charcoal/75 font-sans line-clamp-3 leading-relaxed">
+                                      {cat.description}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="mt-5 pt-3 border-t border-deep-navy/5 flex items-center justify-between">
+                                    <span className="text-[10px] font-mono tracking-widest text-red-clay font-bold uppercase">
+                                      KHÁM PHÁ →
+                                    </span>
+                                    <ChevronRight className="w-4 h-4 text-red-clay transform translate-x-0 group-hover:translate-x-1.5 transition-transform duration-300" />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
 
-                      <h4 className="font-serif font-bold text-base text-deep-navy mb-2 group-hover:text-red-clay transition-colors uppercase tracking-wide">
-                        {cat.name}
-                      </h4>
-                      <p className="text-xs text-charcoal/75 font-sans line-clamp-3 leading-relaxed">
-                        {cat.description}
-                      </p>
+                      {/* Arrow & Indicator Controls row */}
+                      <div className="flex items-center justify-between mt-6 px-2">
+                        <button 
+                          onClick={() => {
+                            const len = mobileCategoriesList.length;
+                            setCurrentCatIndex((prev) => (prev - 1 + len) % len);
+                          }}
+                          className="p-2.5 bg-white border border-deep-navy/10 rounded-full shadow-xs text-deep-navy hover:bg-light-cream hover:text-red-clay active:scale-95 transition-all"
+                          aria-label="Previous Category"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {/* Dot Indicators */}
+                        <div className="flex gap-2">
+                          {mobileCategoriesList.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentCatIndex(idx)}
+                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                idx === currentCatIndex ? "w-6 bg-red-clay" : "bg-deep-navy/15"
+                              }`}
+                              aria-label={`Go to slide ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+
+                        <button 
+                          onClick={() => {
+                            const len = mobileCategoriesList.length;
+                            setCurrentCatIndex((prev) => (prev + 1) % len);
+                          }}
+                          className="p-2.5 bg-white border border-deep-navy/10 rounded-full shadow-xs text-deep-navy hover:bg-light-cream hover:text-red-clay active:scale-95 transition-all"
+                          aria-label="Next Category"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    
-                    <div className="mt-5 pt-3 border-t border-deep-navy/5 flex items-center justify-between">
-                      <span className="text-[10px] font-mono tracking-widest text-red-clay font-bold uppercase">
-                        KHÁM PHÁ →
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-red-clay transform translate-x-0 group-hover:translate-x-1.5 transition-transform duration-300" />
-                    </div>
+                  </>
+                );
+              })()}
+            </section>
+
+            {/* Customer Testimonials Section (Đánh giá của khách hàng) */}
+            <section className="py-20 bg-white border-t border-b border-deep-navy/5 overflow-hidden">
+              <div className="text-center mb-12 px-4">
+                <span className="text-xs uppercase tracking-[0.2em] text-red-clay font-bold font-mono">Ý Kiến Khách Hàng</span>
+                <h3 className="text-3xl sm:text-4xl font-serif font-extrabold mt-2 text-deep-navy uppercase tracking-tight">Gia Chủ Nói Về Chúng Tôi</h3>
+                <div className="w-16 h-[1.5px] bg-red-clay mx-auto mt-4" />
+                <p className="text-xs text-charcoal/60 mt-3 font-sans font-medium">Di chuột vào thẻ đánh giá để tạm dừng xem chi tiết</p>
+              </div>
+
+              {/* Infinite Horizontal Auto-sliding Track with Premium Vignette Fades */}
+              <div className="relative w-full">
+                {/* Left & Right Gradient Vignette Fades */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+                <div className="overflow-hidden w-full py-4">
+                  <div className="animate-marquee-left flex gap-6 px-4">
+                    {/* Render testimonials list twice to allow seamless loop wrapping */}
+                    {testimonials.length > 0 ? (
+                      [...testimonials, ...testimonials, ...testimonials].map((item, index) => (
+                        <div 
+                          key={`${item.id}-${index}`}
+                          className="w-[290px] sm:w-[360px] shrink-0 bg-white border border-deep-navy/10 hover:border-red-clay/35 hover:shadow-md transition-all duration-300 p-6 sm:p-8 rounded-none flex flex-col justify-between text-left"
+                        >
+                          <div>
+                            {/* Star rating display */}
+                            <div className="flex gap-1 mb-4 text-amber-500">
+                              {Array.from({ length: item.rating || 5 }).map((_, i) => (
+                                <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                              ))}
+                            </div>
+                            
+                            {/* Testimonial body content */}
+                            <p className="text-xs sm:text-sm text-charcoal/80 font-sans italic leading-relaxed mb-6 font-medium">
+                              "{item.content}"
+                            </p>
+                          </div>
+
+                          {/* Customer Profile Row */}
+                          <div className="flex items-center gap-3 pt-4 border-t border-deep-navy/5">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-clay/10 flex items-center justify-center border border-clay/10 text-clay font-bold text-xs sm:text-sm font-serif shrink-0">
+                              {item.name ? item.name.charAt(0) : "K"}
+                            </div>
+                            <div>
+                              <strong className="block text-xs sm:text-sm text-deep-navy font-serif font-bold uppercase tracking-wide">
+                                {item.name}
+                              </strong>
+                              <span className="block text-[10px] sm:text-xs text-charcoal/60 font-sans">
+                                {item.role}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      // Safeguard for loading / fallback
+                      <div className="text-center w-full py-4 text-charcoal/50 text-sm font-sans">
+                        Đang tải các đánh giá...
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             </section>
 
@@ -527,60 +872,229 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {homepageData.products.map((prod) => (
-                    <div 
-                      key={prod.id}
-                      className="bg-beige border border-beige-dark/40 rounded-sm overflow-hidden group hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
-                        <img 
-                          src={prod.imageUrl} 
-                          alt={prod.name} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3 bg-clay text-beige text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded-xs">
-                          {prod.categoryName.split(" (")[0]}
-                        </div>
-                      </div>
-                      
-                      <div className="p-5 flex flex-col h-[220px] justify-between">
-                        <div>
-                          <div className="flex items-center gap-1 text-bronze mb-1.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                            ))}
-                            <span className="text-xs text-stone-charcoal/60 ml-1">({prod.rating})</span>
-                          </div>
-                          
-                          <h4 
-                            onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
-                            className="font-serif font-bold text-base text-stone-charcoal hover:text-clay transition-colors cursor-pointer line-clamp-2 leading-tight"
+                {(() => {
+                  const maxProductsCount = 8;
+                  const hasMoreProducts = homepageData.products.length > maxProductsCount;
+                  const displayedProducts = hasMoreProducts 
+                    ? homepageData.products.slice(0, maxProductsCount - 1)
+                    : homepageData.products;
+
+                  const mobileProductsList = hasMoreProducts
+                    ? [...displayedProducts, { id: "view-more-special-prod", name: "Xem thêm", description: "Khám phá toàn bộ tác phẩm đá mỹ nghệ tâm linh tinh xảo khác", isSpecialViewMore: true }]
+                    : homepageData.products;
+
+                  return (
+                    <>
+                      {/* Desktop Grid Layout */}
+                      <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {displayedProducts.map((prod) => (
+                          <div 
+                            key={prod.id}
+                            className="bg-beige border border-beige-dark/40 rounded-sm overflow-hidden group hover:shadow-lg transition-all duration-300"
                           >
-                            {prod.name}
-                          </h4>
-                          
-                          <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-2 leading-relaxed">
-                            {prod.shortDescription}
-                          </p>
+                            <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+                              <img 
+                                src={prod.imageUrl} 
+                                alt={prod.name} 
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute top-3 left-3 bg-clay text-beige text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded-xs">
+                                {prod.categoryName.split(" (")[0]}
+                              </div>
+                            </div>
+                            
+                            <div className="p-5 flex flex-col h-[220px] justify-between">
+                              <div>
+                                <div className="flex items-center gap-1 text-bronze mb-1.5">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                                  ))}
+                                  <span className="text-xs text-stone-charcoal/60 ml-1">({prod.rating})</span>
+                                </div>
+                                
+                                <h4 
+                                  onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
+                                  className="font-serif font-bold text-base text-stone-charcoal hover:text-clay transition-colors cursor-pointer line-clamp-2 leading-tight"
+                                >
+                                  {prod.name}
+                                </h4>
+                                
+                                <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-2 leading-relaxed">
+                                  {prod.shortDescription}
+                                </p>
+                              </div>
+
+                              <div className="border-t border-beige-dark/50 pt-3 flex justify-between items-center mt-3">
+                                <div>
+                                  <span className="text-[10px] uppercase text-stone-charcoal/50 block font-mono">Giá chỉ từ</span>
+                                  <span className="text-sm font-semibold text-clay">{prod.priceStr}</span>
+                                </div>
+                                <button
+                                  onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
+                                  className="px-3.5 py-1.5 bg-beige-paper text-stone-charcoal hover:bg-clay hover:text-beige border border-bronze/40 text-xs font-semibold transition-all rounded-xs"
+                                >
+                                  Chi Tiết
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {hasMoreProducts && (
+                          <div 
+                            onClick={() => navigate({ type: "products" })}
+                            className="bg-beige border border-dashed border-clay/40 rounded-sm overflow-hidden group hover:border-clay hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between p-6 h-full min-h-[350px]"
+                          >
+                            <div className="flex-grow flex flex-col justify-center items-center py-6 text-center">
+                              <div className="w-14 h-14 rounded-full bg-clay/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <Sparkles className="w-7 h-7 text-clay" />
+                              </div>
+                              <h4 className="font-serif font-bold text-lg text-stone-charcoal group-hover:text-clay transition-colors uppercase tracking-wide">
+                                Xem Thêm
+                              </h4>
+                              <p className="text-xs text-stone-charcoal/70 font-sans px-4 mt-2">
+                                Khám phá toàn bộ tác phẩm đá mỹ nghệ tâm linh tinh xảo khác của chúng tôi.
+                              </p>
+                            </div>
+                            
+                            <div className="w-full pt-4 border-t border-beige-dark/50 flex items-center justify-center gap-1.5 text-[10px] font-mono tracking-widest text-clay font-bold uppercase">
+                              TẤT CẢ SẢN PHẨM <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Mobile Horizontal Sliding Track */}
+                      <div className="block md:hidden relative px-2">
+                        <div className="relative overflow-hidden w-full">
+                          <div 
+                            className="flex transition-transform duration-500 ease-in-out"
+                            style={{ transform: `translateX(-${currentProdIndex * 100}%)` }}
+                          >
+                            {mobileProductsList.map((prod: any) => {
+                              if (prod.isSpecialViewMore) {
+                                return (
+                                  <div key="view-more-special-prod" className="w-full shrink-0 px-2">
+                                    <div 
+                                      onClick={() => navigate({ type: "products" })}
+                                      className="bg-beige border border-dashed border-clay/40 rounded-sm overflow-hidden group hover:border-clay hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between p-6 h-full min-h-[350px] text-center"
+                                    >
+                                      <div className="flex-grow flex flex-col justify-center items-center py-6">
+                                        <div className="w-14 h-14 rounded-full bg-clay/5 flex items-center justify-center mb-4">
+                                          <Sparkles className="w-7 h-7 text-clay" />
+                                        </div>
+                                        <h4 className="font-serif font-bold text-lg text-stone-charcoal uppercase tracking-wide">
+                                          Xem Thêm
+                                        </h4>
+                                        <p className="text-xs text-stone-charcoal/70 font-sans px-4 mt-2">
+                                          Khám phá toàn bộ tác phẩm đá mỹ nghệ tâm linh tinh xảo khác của chúng tôi.
+                                        </p>
+                                      </div>
+                                      <div className="w-full pt-4 border-t border-beige-dark/50 flex items-center justify-center gap-1.5 text-[10px] font-mono tracking-widest text-clay font-bold uppercase">
+                                        TẤT CẢ SẢN PHẨM <ChevronRight className="w-4 h-4" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div key={prod.id} className="w-full shrink-0 px-2">
+                                  <div className="bg-beige border border-beige-dark/40 rounded-sm overflow-hidden group hover:shadow-lg transition-all duration-300 text-left">
+                                    <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
+                                      <img 
+                                        src={prod.imageUrl} 
+                                        alt={prod.name} 
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <div className="absolute top-3 left-3 bg-clay text-beige text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded-xs">
+                                        {prod.categoryName.split(" (")[0]}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="p-5 flex flex-col h-[220px] justify-between">
+                                      <div>
+                                        <div className="flex items-center gap-1 text-bronze mb-1.5">
+                                          {[...Array(5)].map((_, i) => (
+                                            <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                                          ))}
+                                          <span className="text-xs text-stone-charcoal/60 ml-1">({prod.rating})</span>
+                                        </div>
+                                        
+                                        <h4 
+                                          onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
+                                          className="font-serif font-bold text-base text-stone-charcoal hover:text-clay transition-colors cursor-pointer line-clamp-2 leading-tight"
+                                        >
+                                          {prod.name}
+                                        </h4>
+                                        
+                                        <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-2 leading-relaxed">
+                                          {prod.shortDescription}
+                                        </p>
+                                      </div>
+
+                                      <div className="border-t border-beige-dark/50 pt-3 flex justify-between items-center mt-3">
+                                        <div>
+                                          <span className="text-[10px] uppercase text-stone-charcoal/50 block font-mono">Giá chỉ từ</span>
+                                          <span className="text-sm font-semibold text-clay">{prod.priceStr}</span>
+                                        </div>
+                                        <button
+                                          onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
+                                          className="px-3.5 py-1.5 bg-beige-paper text-stone-charcoal hover:bg-clay hover:text-beige border border-bronze/40 text-xs font-semibold transition-all rounded-xs"
+                                        >
+                                          Chi Tiết
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
 
-                        <div className="border-t border-beige-dark/50 pt-3 flex justify-between items-center mt-3">
-                          <div>
-                            <span className="text-[10px] uppercase text-stone-charcoal/50 block font-mono">Giá chỉ từ</span>
-                            <span className="text-sm font-semibold text-clay">{prod.priceStr}</span>
-                          </div>
-                          <button
-                            onClick={() => navigate({ type: "product-detail", slug: prod.slug })}
-                            className="px-3.5 py-1.5 bg-beige-paper text-stone-charcoal hover:bg-clay hover:text-beige border border-bronze/40 text-xs font-semibold transition-all rounded-xs"
+                        {/* Arrow & Indicator Controls row */}
+                        <div className="flex items-center justify-between mt-6 px-2">
+                          <button 
+                            onClick={() => {
+                              const len = mobileProductsList.length;
+                              setCurrentProdIndex((prev) => (prev - 1 + len) % len);
+                            }}
+                            className="p-2.5 bg-white border border-deep-navy/10 rounded-full shadow-xs text-deep-navy hover:bg-light-cream hover:text-red-clay active:scale-95 transition-all"
+                            aria-label="Previous Product"
                           >
-                            Chi Tiết
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          {/* Dot Indicators */}
+                          <div className="flex gap-2">
+                            {mobileProductsList.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setCurrentProdIndex(idx)}
+                                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                  idx === currentProdIndex ? "w-6 bg-red-clay" : "bg-deep-navy/15"
+                                }`}
+                                aria-label={`Go to slide ${idx + 1}`}
+                              />
+                            ))}
+                          </div>
+
+                          <button 
+                            onClick={() => {
+                              const len = mobileProductsList.length;
+                              setCurrentProdIndex((prev) => (prev + 1) % len);
+                            }}
+                            className="p-2.5 bg-white border border-deep-navy/10 rounded-full shadow-xs text-deep-navy hover:bg-light-cream hover:text-red-clay active:scale-95 transition-all"
+                            aria-label="Next Product"
+                          >
+                            <ChevronRight className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    </>
+                  );
+                })()}
               </div>
             </section>
 
@@ -592,7 +1106,8 @@ export default function App() {
                 <div className="w-16 h-0.5 bg-clay mx-auto mt-3" />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Desktop layout: Grid layout */}
+              <div className="hidden sm:grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {homepageData.projects.map((proj) => (
                   <div 
                     key={proj.id}
@@ -638,7 +1153,113 @@ export default function App() {
                   </div>
                 ))}
               </div>
+
+              {/* Mobile layout: Mixed vertical-horizontal stack matching wireframe */}
+              <div className="block sm:hidden flex flex-col gap-4">
+                {homepageData.projects.slice(0, 3).map((proj, idx) => {
+                  if (idx === 0) {
+                    // First item: Taller/large card
+                    return (
+                      <div 
+                        key={proj.id}
+                        className="bg-beige-paper/50 border border-beige-dark/40 rounded-lg overflow-hidden flex flex-col shadow-xs"
+                      >
+                        <div className="relative aspect-[16/10] overflow-hidden bg-stone-200">
+                          <img 
+                            src={proj.imageUrl} 
+                            alt={proj.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-3 left-3 bg-stone-charcoal/90 text-white text-xs px-2.5 py-1 rounded-xs font-mono">
+                            {proj.location}
+                          </div>
+                        </div>
+                        <div className="p-4 flex-grow flex flex-col justify-between">
+                          <div>
+                            <span className="text-[10px] uppercase tracking-wider font-semibold text-clay block mb-1">
+                              Năm thực hiện: {proj.year}
+                            </span>
+                            <h4 
+                              onClick={() => navigate({ type: "project-detail", slug: proj.slug })}
+                              className="font-serif font-bold text-base text-stone-charcoal hover:text-clay transition-colors cursor-pointer line-clamp-2 leading-snug"
+                            >
+                              {proj.name}
+                            </h4>
+                            <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-2 leading-relaxed">
+                              {proj.shortDescription}
+                            </p>
+                          </div>
+                          <div className="border-t border-beige-dark/30 pt-3 mt-3 flex items-center justify-between">
+                            <span className="text-[10px] italic text-stone-charcoal/60 line-clamp-1 max-w-[150px]">
+                              Vật liệu: {proj.material.split(" ")[0]}
+                            </span>
+                            <button
+                              onClick={() => navigate({ type: "project-detail", slug: proj.slug })}
+                              className="text-xs font-bold text-clay hover:text-clay-dark flex items-center gap-1 uppercase tracking-wider"
+                            >
+                              Xem chi tiết <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    // Shorter, horizontal row/card
+                    return (
+                      <div 
+                        key={proj.id}
+                        className="bg-beige-paper/50 border border-beige-dark/40 rounded-lg overflow-hidden flex flex-row h-28 shadow-xs"
+                      >
+                        <div className="relative w-28 h-full overflow-hidden bg-stone-200 shrink-0">
+                          <img 
+                            src={proj.imageUrl} 
+                            alt={proj.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-3 flex flex-col justify-between flex-grow min-w-0">
+                          <div>
+                            <span className="text-[9px] uppercase font-mono tracking-wider font-semibold text-clay block leading-none mb-1">
+                              {proj.location} • {proj.year}
+                            </span>
+                            <h4 
+                              onClick={() => navigate({ type: "project-detail", slug: proj.slug })}
+                              className="font-serif font-bold text-xs text-stone-charcoal hover:text-clay transition-colors cursor-pointer line-clamp-2 leading-snug"
+                            >
+                              {proj.name}
+                            </h4>
+                          </div>
+                          <div className="border-t border-beige-dark/15 pt-1 mt-1 flex justify-between items-center text-[10px]">
+                            <span className="text-[9px] italic text-stone-charcoal/50 truncate max-w-[110px]">
+                              {proj.material.split(" ")[0]}
+                            </span>
+                            <button
+                              onClick={() => navigate({ type: "project-detail", slug: proj.slug })}
+                              className="font-bold text-clay flex items-center gap-0.5 uppercase tracking-wider text-[10px]"
+                            >
+                              Xem <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
+
+                {/* View All Button aligned at the bottom right */}
+                <div className="flex justify-end mt-2 px-1">
+                  <button 
+                    onClick={() => navigate({ type: "projects" })}
+                    className="text-xs font-bold uppercase tracking-widest text-clay hover:text-clay-dark flex items-center gap-1 font-mono"
+                  >
+                    XEM TẤT CẢ <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </section>
+
+            {/* Custom CTA & FAQ Section */}
+            <CtaFaqSection faqs={faqs} ctaSlides={ctaSlides} onContactClick={() => navigate({ type: "contact" })} />
 
             {/* Latest Posts (Bài viết mới) */}
             <section className="py-16 bg-beige-paper border-t border-beige-dark/50">
@@ -650,13 +1271,14 @@ export default function App() {
                   </div>
                   <button 
                     onClick={() => navigate({ type: "posts" })}
-                    className="text-xs font-bold uppercase tracking-wider text-clay hover:text-clay-dark underline underline-offset-4 flex items-center gap-1"
+                    className="hidden sm:flex text-xs font-bold uppercase tracking-wider text-clay hover:text-clay-dark underline underline-offset-4 items-center gap-1"
                   >
                     Xem tất cả bài viết <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Desktop layout: Grid layout */}
+                <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-8">
                   {homepageData.posts.map((post) => (
                     <div 
                       key={post.id}
@@ -692,6 +1314,96 @@ export default function App() {
                     </div>
                   ))}
                 </div>
+
+                {/* Mobile layout: Mixed vertical-horizontal stack matching wireframe */}
+                <div className="block sm:hidden flex flex-col gap-4">
+                  {homepageData.posts.slice(0, 3).map((post, idx) => {
+                    if (idx === 0) {
+                      // First item: Taller/large card
+                      return (
+                        <div 
+                          key={post.id}
+                          className="bg-beige border border-beige-dark/30 rounded-lg overflow-hidden flex flex-col shadow-xs"
+                          onClick={() => navigate({ type: "post-detail", slug: post.slug })}
+                        >
+                          <div className="relative aspect-[16/10] overflow-hidden bg-stone-100">
+                            <img 
+                              src={post.imageUrl} 
+                              alt={post.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="p-4">
+                            <div className="flex items-center gap-3 text-[10px] text-stone-charcoal/60 font-mono mb-2">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" /> {post.date}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {post.readTime}
+                              </span>
+                            </div>
+                            <h4 className="font-serif font-bold text-base text-stone-charcoal line-clamp-2 leading-snug">
+                              {post.name}
+                            </h4>
+                            <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-2 leading-relaxed">
+                              {post.shortDescription}
+                            </p>
+                            <span className="text-[11px] font-bold text-clay mt-3 inline-block uppercase tracking-wider">
+                              Đọc tiếp →
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      // Second & Third items: Shorter horizontal row/card
+                      return (
+                        <div 
+                          key={post.id}
+                          className="bg-beige border border-beige-dark/30 rounded-lg overflow-hidden flex flex-row h-28 shadow-xs"
+                          onClick={() => navigate({ type: "post-detail", slug: post.slug })}
+                        >
+                          <div className="relative w-28 h-full overflow-hidden bg-stone-100 shrink-0">
+                            <img 
+                              src={post.imageUrl} 
+                              alt={post.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="p-3 flex flex-col justify-between flex-grow min-w-0">
+                            <div>
+                              <div className="flex items-center gap-2 text-[9px] text-stone-charcoal/50 font-mono leading-none mb-1">
+                                <span className="flex items-center gap-0.5">
+                                  <Calendar className="w-2.5 h-2.5" /> {post.date}
+                                </span>
+                              </div>
+                              <h4 className="font-serif font-bold text-xs text-stone-charcoal line-clamp-2 leading-snug">
+                                {post.name}
+                              </h4>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] mt-1 pt-1 border-t border-beige-dark/15">
+                              <span className="text-[9px] font-mono text-stone-charcoal/50">
+                                {post.readTime}
+                              </span>
+                              <span className="font-bold text-clay uppercase tracking-wider text-[10px]">
+                                Đọc tiếp →
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                  })}
+
+                  {/* View All Button aligned at the bottom right */}
+                  <div className="flex justify-end mt-2 px-1">
+                    <button 
+                      onClick={() => navigate({ type: "posts" })}
+                      className="text-xs font-bold uppercase tracking-widest text-clay hover:text-clay-dark flex items-center gap-1 font-mono"
+                    >
+                      XEM TẤT CẢ <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -699,21 +1411,21 @@ export default function App() {
             <section className="py-16 bg-clay text-beige">
               <div className="max-w-4xl mx-auto text-center px-4">
                 <span className="text-xs uppercase tracking-[0.3em] text-bronze font-semibold font-mono block mb-2">
-                  ĐÁ TÂM AN - TÂM HUYẾT TRƯỜNG TỒN
+                  LĂNG MỘ ĐÁ QUẢNG TRỊ - TÂM HUYẾT TRƯỜNG TỒN
                 </span>
                 <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold mb-4">
-                  Quý Khách Cần Tư Vấn Thiết Kế Mẫu Bia Mộ Đá?
+                  {siteSettings?.hotline_title || "Quý Khách Cần Tư Vấn Thiết Kế Mẫu Bia Mộ Đá?"}
                 </h3>
-                <p className="text-sm max-w-2xl mx-auto mb-8 opacity-90 font-sans leading-relaxed">
-                  Đội ngũ thiết kế hỗ trợ tư vấn phong thủy Lỗ Ban, chạm hoa sen, rồng chầu, mạ vàng 24K miễn phí. Cung cấp báo giá xưởng tối ưu nhất, vận chuyển toàn quốc.
+                <p className="text-sm max-w-2xl mx-auto mb-8 opacity-90 font-sans leading-relaxed whitespace-pre-line">
+                  {siteSettings?.hotline_subtitle || "Đội ngũ thiết kế hỗ trợ tư vấn phong thủy Lỗ Ban, chạm hoa sen, rồng chầu, mạ vàng 24K miễn phí. Cung cấp báo giá xưởng tối ưu nhất, vận chuyển toàn quốc."}
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                   <a 
-                    href="tel:0987654321"
+                    href={`tel:${(siteSettings?.hotline_phone || "0987654321").replace(/\D/g, "")}`}
                     className="px-8 py-4 bg-beige text-clay hover:bg-beige-paper text-sm font-bold uppercase tracking-widest rounded-sm transition-all shadow-md flex items-center gap-2.5"
                   >
                     <Phone className="w-4.5 h-4.5 text-clay animate-bounce" />
-                    Gọi Ngay: 0987.654.321
+                    Gọi Ngay: {siteSettings?.hotline_phone || "0987.654.321"}
                   </a>
                   <button 
                     onClick={() => navigate({ type: "contact" })}
@@ -866,7 +1578,7 @@ export default function App() {
                 <div className="bg-clay-light/40 border border-clay/10 p-5 rounded-sm">
                   <h4 className="font-serif font-bold text-sm text-clay-dark mb-2">Hỗ Trợ Thiết Kế 2D</h4>
                   <p className="text-xs text-stone-charcoal/80 font-sans leading-relaxed">
-                    Xưởng Đá Tâm An nhận đo đạc trực tiếp, thiết kế bản vẽ mô phỏng 2D/3D chuẩn cung số Lỗ Ban miễn phí hoàn toàn.
+                    Xưởng LĂNG MỘ ĐÁ QUẢNG TRỊ nhận đo đạc trực tiếp, thiết kế bản vẽ mô phỏng 2D/3D chuẩn cung số Lỗ Ban miễn phí hoàn toàn.
                   </p>
                   <button
                     onClick={() => navigate({ type: "contact" })}
@@ -1251,7 +1963,7 @@ export default function App() {
               <span className="text-xs text-clay font-bold uppercase font-mono tracking-wider">Công trình thực tế</span>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-charcoal mt-1">Dự Án Điêu Khắc Đá Tiêu Biểu</h2>
               <p className="text-sm text-stone-charcoal/70 mt-1 max-w-2xl font-sans">
-                Tổng hợp các công trình phục dựng bia di tích quốc gia, quy hoạch lăng mộ gia đình, và bia liệt sĩ tâm linh do Đá Tâm An trực tiếp gia công chế tác và lắp dựng hoàn chỉnh.
+                Tổng hợp các công trình phục dựng bia di tích quốc gia, quy hoạch lăng mộ gia đình, và bia liệt sĩ tâm linh do LĂNG MỘ ĐÁ QUẢNG TRỊ trực tiếp gia công chế tác và lắp dựng hoàn chỉnh.
               </p>
             </div>
 
@@ -1400,51 +2112,91 @@ export default function App() {
         {/* ======================================= */}
         {/* VIEW: POSTS (TIN TỨC - CẨM NANG)        */}
         {/* ======================================= */}
-        {currentView.type === "posts" && (
-          <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="border-b border-beige-dark pb-6 mb-10 text-center sm:text-left">
-              <span onClick={() => navigate({ type: "home" })} className="text-xs text-stone-charcoal/60 hover:text-clay cursor-pointer uppercase font-mono tracking-wider">Trang chủ</span>
-              <span className="text-xs text-stone-charcoal/40 mx-2">/</span>
-              <span className="text-xs text-clay font-bold uppercase font-mono tracking-wider">Cẩm nang phong thủy</span>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-charcoal mt-1">Tư Vấn Phong Thủy & Ý Nghĩa Tâm Linh</h2>
-              <p className="text-sm text-stone-charcoal/70 mt-1 max-w-2xl font-sans">
-                Kênh chia sẻ kiến thức hữu ích về cách chọn kích thước bia mộ chuẩn phong thủy Lỗ Ban, so sánh các dòng đá tạc mỹ nghệ và giải mã các mẫu họa tiết chạm khắc cổ điển.
-              </p>
-            </div>
+        {currentView.type === "posts" && (() => {
+          const catMap: { [key: string]: string } = {
+            knowledge: "Kiến thức",
+            consulting: "Tư vấn",
+            news: "Tin tức",
+            feng_shui: "Phong thủy"
+          };
+          const filterSlug = currentView.categorySlug;
+          const filteredPosts = filterSlug ? posts.filter(p => p.category === filterSlug) : posts;
+          const categoryName = filterSlug ? catMap[filterSlug] || filterSlug : "Tất cả bài viết";
+          
+          return (
+            <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="border-b border-beige-dark pb-6 mb-10 text-center sm:text-left">
+                <span onClick={() => navigate({ type: "home" })} className="text-xs text-stone-charcoal/60 hover:text-clay cursor-pointer uppercase font-mono tracking-wider">Trang chủ</span>
+                <span className="text-xs text-stone-charcoal/40 mx-2">/</span>
+                <span onClick={() => navigate({ type: "posts" })} className="text-xs text-stone-charcoal/60 hover:text-clay cursor-pointer uppercase font-mono tracking-wider">Bài viết</span>
+                {filterSlug && (
+                  <>
+                    <span className="text-xs text-stone-charcoal/40 mx-2">/</span>
+                    <span className="text-xs text-clay font-bold uppercase font-mono tracking-wider">{categoryName}</span>
+                  </>
+                )}
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-charcoal mt-1">
+                  {filterSlug ? `Chuyên Mục: ${categoryName}` : "Tư Vấn Phong Thủy & Ý Nghĩa Tâm Linh"}
+                </h2>
+                <p className="text-sm text-stone-charcoal/70 mt-1 max-w-2xl font-sans">
+                  {filterSlug 
+                    ? `Danh sách các bài viết, tư vấn chia sẻ thông tin hữu ích thuộc chuyên mục ${categoryName}.`
+                    : "Kênh chia sẻ kiến thức hữu ích về cách chọn kích thước bia mộ chuẩn phong thủy Lỗ Ban, so sánh các dòng đá tạc mỹ nghệ và giải mã các mẫu họa tiết chạm khắc cổ điển."}
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
-                <div 
-                  key={post.id}
-                  className="bg-beige-paper/30 border border-beige-dark/30 rounded-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => navigate({ type: "post-detail", slug: post.slug })}
-                >
-                  <div className="aspect-video bg-stone-100 overflow-hidden relative">
-                    <img src={post.imageUrl} alt={post.name} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 text-[10px] text-stone-charcoal/50 font-mono mb-2">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> {post.date}
-                      </span>
-                      <span>•</span>
-                      <span>{post.readTime}</span>
+              {filteredPosts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredPosts.map((post) => (
+                    <div 
+                      key={post.id}
+                      className="bg-beige-paper/30 border border-beige-dark/30 rounded-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate({ type: "post-detail", slug: post.slug })}
+                    >
+                      <div className="aspect-video bg-stone-100 overflow-hidden relative">
+                        <img src={post.imageUrl} alt={post.name} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
+                      </div>
+                      <div className="p-5">
+                        <div className="flex items-center gap-3 text-[10px] text-stone-charcoal/50 font-mono mb-2">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> {post.date}
+                          </span>
+                          <span>•</span>
+                          <span>{post.readTime}</span>
+                          {post.category && (
+                            <>
+                              <span>•</span>
+                              <span className="text-clay font-semibold uppercase">{catMap[post.category] || post.category}</span>
+                            </>
+                          )}
+                        </div>
+                        <h3 className="font-serif font-bold text-base text-stone-charcoal group-hover:text-clay transition-colors line-clamp-2">
+                          {post.name}
+                        </h3>
+                        <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-3 leading-relaxed">
+                          {post.shortDescription}
+                        </p>
+                        <span className="text-xs font-bold text-clay mt-4 inline-block hover:underline">
+                          Đọc toàn bộ bài viết →
+                        </span>
+                      </div>
                     </div>
-                    <h3 className="font-serif font-bold text-base text-stone-charcoal group-hover:text-clay transition-colors line-clamp-2">
-                      {post.name}
-                    </h3>
-                    <p className="text-xs text-stone-charcoal/70 font-sans mt-2 line-clamp-3 leading-relaxed">
-                      {post.shortDescription}
-                    </p>
-                    <span className="text-xs font-bold text-clay mt-4 inline-block hover:underline">
-                      Đọc toàn bộ bài viết →
-                    </span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-16 bg-beige-paper/20 border border-dashed border-beige-dark/30 rounded-sm">
+                  <p className="text-stone-charcoal/60 font-serif italic">Hiện tại chuyên mục này chưa có bài viết nào.</p>
+                  <button 
+                    onClick={() => navigate({ type: "posts" })}
+                    className="mt-4 px-6 py-2 bg-clay text-white text-xs font-semibold uppercase tracking-wider rounded-xs"
+                  >
+                    Xem tất cả bài viết
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ======================================= */}
         {/* VIEW: POST DETAIL                       */}
@@ -1517,173 +2269,81 @@ export default function App() {
         {/* ======================================= */}
         {currentView.type === "contact" && (
           <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="border-b border-beige-dark pb-6 mb-10 text-center sm:text-left">
+            <div className="border-b border-beige-dark pb-6 mb-10 text-center">
               <span onClick={() => navigate({ type: "home" })} className="text-xs text-stone-charcoal/60 hover:text-clay cursor-pointer uppercase font-mono tracking-wider">Trang chủ</span>
               <span className="text-xs text-stone-charcoal/40 mx-2">/</span>
               <span className="text-xs text-clay font-bold uppercase font-mono tracking-wider">Liên hệ</span>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-charcoal mt-1">Liên Hệ Thiết Kế & Báo Giá Xưởng</h2>
-              <p className="text-sm text-stone-charcoal/70 mt-1 max-w-2xl font-sans">
-                Điền đầy đủ thông tin vào mẫu khảo sát dưới đây, đội ngũ kiến trúc sư và nghệ nhân Đá Tâm An sẽ gọi điện tư vấn phác thảo bản vẽ Lỗ Ban miễn phí trong vòng 1h.
+              <p className="text-sm text-stone-charcoal/70 mt-1 max-w-2xl mx-auto font-sans">
+                Quý khách vui lòng liên hệ qua hotline hoặc ghé thăm trực tiếp xưởng chế tác LĂNG MỘ ĐÁ QUẢNG TRỊ để nhận tư vấn thiết kế và báo giá chi tiết, nhanh chóng nhất.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               
-              {/* Form Input Block Column */}
-              <div className="lg:col-span-7 bg-beige-paper p-6 sm:p-8 rounded-sm border border-beige-dark/55">
-                <h3 className="font-serif font-bold text-lg text-stone-charcoal border-b border-beige-dark pb-3 mb-6 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-clay animate-pulse" /> Đăng ký nhận thông tin tư vấn
-                </h3>
-
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  {formSuccessMsg && (
-                    <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 text-sm text-emerald-800 rounded-sm">
-                      <p className="font-semibold">{formSuccessMsg}</p>
-                    </div>
-                  )}
-
-                  {formErrorMsg && (
-                    <div className="p-4 bg-clay-light border-l-4 border-clay text-sm text-clay-dark rounded-sm">
-                      <p className="font-semibold">{formErrorMsg}</p>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-stone-charcoal/70 block mb-1">Họ tên gia chủ <span className="text-clay">*</span></label>
-                      <input
-                        type="text"
-                        required
-                        value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        placeholder="Ví dụ: Nguyễn Văn A"
-                        className="w-full bg-beige border border-beige-dark/75 focus:border-clay/80 text-sm p-2.5 rounded-xs focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-stone-charcoal/70 block mb-1">Số điện thoại liên hệ <span className="text-clay">*</span></label>
-                      <input
-                        type="tel"
-                        required
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                        placeholder="Ví dụ: 0912345678"
-                        className="w-full bg-beige border border-beige-dark/75 focus:border-clay/80 text-sm p-2.5 rounded-xs focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-semibold text-stone-charcoal/70 block mb-1">Địa chỉ Email (Nếu có)</label>
-                      <input
-                        type="email"
-                        value={contactEmail}
-                        onChange={(e) => setContactEmail(e.target.value)}
-                        placeholder="Vi dụ: giaochu@gmail.com"
-                        className="w-full bg-beige border border-beige-dark/75 focus:border-clay/80 text-sm p-2.5 rounded-xs focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-stone-charcoal/70 block mb-1">Sản phẩm cần tư vấn</label>
-                      <select
-                        value={contactProduct}
-                        onChange={(e) => setContactProduct(e.target.value)}
-                        className="w-full bg-beige border border-beige-dark/75 focus:border-clay/80 text-sm p-2.5 rounded-xs focus:outline-none"
-                      >
-                        <option value="">-- Chọn Mẫu Bia / Mộ Đá --</option>
-                        {allProducts.map((p) => (
-                          <option key={p.id} value={p.slug}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-stone-charcoal/70 block mb-1">Nội dung chi tiết yêu cầu kích thước, chất đá, câu chữ</label>
-                    <textarea
-                      rows={4}
-                      value={contactMessage}
-                      onChange={(e) => setContactMessage(e.target.value)}
-                      placeholder="Nhập yêu cầu riêng về hoa văn khắc chữ, loại đá, kích thước chuẩn phong thủy..."
-                      className="w-full bg-beige border border-beige-dark/75 focus:border-clay/80 text-sm p-2.5 rounded-xs focus:outline-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-clay hover:bg-clay-dark disabled:bg-stone-charcoal/30 text-white font-bold text-xs uppercase tracking-widest transition-all rounded-sm flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    {isSubmitting ? (
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    ) : (
-                      <>
-                        <Send className="w-4.5 h-4.5 text-bronze" /> Đăng Ký Tư Vấn Miễn Phí
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              {/* Sidebar Info Column */}
-              <div className="lg:col-span-5 space-y-6">
-                
-                {/* Visual Direct hotline box */}
-                <div className="bg-clay text-beige p-6 rounded-sm border border-bronze/40 shadow-md">
+              {/* Visual Direct hotline box */}
+              <div className="bg-clay text-beige p-6 sm:p-8 rounded-sm border border-bronze/40 shadow-md flex flex-col justify-between">
+                <div>
                   <h4 className="font-serif font-bold text-lg text-bronze mb-2">Đường Dây Nóng Hỗ Trợ Gấp</h4>
                   <p className="text-xs opacity-90 leading-relaxed font-sans mb-6">
                     Liên hệ ngay với quản lý xưởng tạc đá của chúng tôi để được giải đáp tức thì về giá cả, tư vấn phong thủy nhanh chóng.
                   </p>
-                  
-                  <div className="space-y-4">
-                    <a href="tel:0987654321" className="flex items-center gap-3.5 hover:text-bronze transition-colors">
-                      <div className="p-2.5 bg-clay-dark rounded-full">
-                        <Phone className="w-5 h-5 text-bronze animate-bounce" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] block opacity-70 font-mono">Hotline tư vấn kỹ thuật</span>
-                        <strong className="text-base font-serif">0987.654.321</strong>
-                      </div>
-                    </a>
-                    
-                    <div className="flex items-center gap-3.5">
-                      <div className="p-2.5 bg-clay-dark rounded-full">
-                        <MapPin className="w-5 h-5 text-bronze" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] block opacity-70 font-mono">Văn phòng & Xưởng sản xuất</span>
-                        <strong className="text-xs leading-normal block">Làng nghề đá mỹ nghệ Ninh Vân, Hoa Lư, Ninh Bình</strong>
-                      </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <a href={`tel:${(siteSettings?.hotline_phone || "0987654321").replace(/\D/g, "")}`} className="flex items-center gap-3.5 hover:text-bronze transition-colors">
+                    <div className="p-2.5 bg-clay-dark rounded-full">
+                      <Phone className="w-5 h-5 text-bronze animate-bounce" />
                     </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider block opacity-70">Hotline 24/7</span>
+                      <strong className="text-lg font-serif tracking-wide">{siteSettings?.hotline_phone || "0987.654.321"}</strong>
+                    </div>
+                  </a>
 
-                    <div className="flex items-center gap-3.5">
-                      <div className="p-2.5 bg-clay-dark rounded-full">
-                        <Mail className="w-5 h-5 text-bronze" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] block opacity-70 font-mono">Email trao đổi báo giá</span>
-                        <strong className="text-xs font-mono">lienhe@dataman.vn</strong>
-                      </div>
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 bg-clay-dark rounded-full">
+                      <MapPin className="w-5 h-5 text-bronze" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider block opacity-70">Địa Chỉ Xưởng</span>
+                      <span className="text-xs font-sans leading-snug">{siteSettings?.footer_address ? siteSettings.footer_address.split("\n")[0] : "Ninh Vân, Hoa Lư, Ninh Bình"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 bg-clay-dark rounded-full">
+                      <Mail className="w-5 h-5 text-bronze" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider block opacity-70">Email Liên Hệ</span>
+                      <span className="text-xs font-sans">{siteSettings?.footer_address ? siteSettings.footer_address.split("\n")[2]?.replace("Email: ", "") || "lienhe@dataman.vn" : "lienhe@dataman.vn"}</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Google map simulation */}
-                <div className="border border-beige-dark/60 bg-beige-paper p-4 rounded-sm">
-                  <h4 className="font-serif font-bold text-xs text-stone-charcoal mb-2">Bản Đồ Chỉ Đường Tới Xưởng Chế Tác</h4>
-                  <div className="aspect-video bg-stone-200 overflow-hidden rounded-xs relative flex items-center justify-center border border-bronze/10">
-                    {/* Simulated elegant map placeholder */}
-                    <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop')" }} />
-                    <div className="text-center z-10 px-4">
-                      <MapPin className="w-8 h-8 text-clay mx-auto mb-1 animate-bounce" />
-                      <strong className="text-xs text-stone-charcoal block">Đá Mỹ Nghệ Tâm An</strong>
-                      <span className="text-[10px] text-stone-charcoal/60">Ninh Vân, Hoa Lư, Ninh Bình</span>
-                    </div>
-                  </div>
-                </div>
-
               </div>
+
+              {/* Google map simulation */}
+              <div className="border border-beige-dark/60 bg-beige-paper p-6 sm:p-8 rounded-sm flex flex-col justify-between">
+                <div>
+                  <h4 className="font-serif font-bold text-lg text-stone-charcoal mb-2 border-b border-beige-dark pb-3">Bản Đồ Chỉ Đường Tới Xưởng Chế Tác</h4>
+                  <p className="text-xs text-stone-charcoal/70 leading-relaxed font-sans mb-4">
+                    Kính mời quý khách hàng ghé thăm trực tiếp xưởng chế tác để cảm nhận chất lượng phôi đá tự nhiên nguyên khối và sự tỉ mỉ trong từng đường chạm khắc từ nghệ nhân của chúng tôi.
+                  </p>
+                </div>
+                <div className="aspect-video bg-stone-200 overflow-hidden rounded-xs relative flex items-center justify-center border border-bronze/10">
+                  {/* Simulated elegant map placeholder */}
+                  <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop')" }} />
+                  <div className="text-center z-10 px-4">
+                    <MapPin className="w-8 h-8 text-clay mx-auto mb-1 animate-bounce" />
+                    <strong className="text-xs text-stone-charcoal block">Đá Mỹ Nghệ Tâm An</strong>
+                    <span className="text-[10px] text-stone-charcoal/60">
+                      {siteSettings?.footer_address ? siteSettings.footer_address.split("\n")[0].replace("Địa chỉ: ", "") : "Ninh Vân, Hoa Lư, Ninh Bình"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         )}
@@ -1696,23 +2356,23 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8 border-b border-white/10 pb-8">
             
             {/* Column 1: Brand Info */}
-            <div className="md:col-span-5 space-y-4">
+            <div className="md:col-span-4 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-sm bg-clay flex items-center justify-center traditional-border">
                   <span className="font-serif font-bold text-lg text-bronze">TA</span>
                 </div>
                 <div>
-                  <h4 className="font-serif font-bold text-lg tracking-wide text-white leading-none">ĐÁ TÂM AN</h4>
+                  <h4 className="font-serif font-bold text-lg tracking-wide text-white leading-none">LĂNG MỘ ĐÁ QUẢNG TRỊ</h4>
                   <span className="text-[10px] uppercase tracking-widest text-bronze font-mono">Giao hòa truyền thống & hiện đại</span>
                 </div>
               </div>
-              <p className="text-xs text-beige/70 leading-relaxed font-sans max-w-sm">
-                Chúng tôi tự hào kế thừa nét tinh hoa chạm khắc đá độc bản hàng trăm năm từ Ninh Bình. Cam kết cung cấp các sản phẩm bia mộ đá Granite, bia đá xanh tự nhiên trường tồn vĩnh cửu.
+              <p className="text-xs text-beige/70 leading-relaxed font-sans max-w-sm whitespace-pre-line">
+                {siteSettings?.footer_brand_description || "Chúng tôi tự hào kế thừa nét tinh hoa chạm khắc đá độc bản hàng trăm năm từ Ninh Bình. Cam kết cung cấp các sản phẩm bia mộ đá Granite, bia đá xanh tự nhiên trường tồn vĩnh cửu."}
               </p>
             </div>
 
             {/* Column 2: Navigation shortcuts */}
-            <div className="md:col-span-3 space-y-3">
+            <div className="md:col-span-2 space-y-3">
               <h5 className="font-serif font-bold text-sm text-bronze uppercase tracking-wider">Hỗ Trợ Nhanh</h5>
               <ul className="space-y-1.5 text-xs text-beige/80 font-sans">
                 <li>
@@ -1739,13 +2399,59 @@ export default function App() {
             </div>
 
             {/* Column 3: Workshop location details */}
-            <div className="md:col-span-4 space-y-3">
+            <div className="md:col-span-3 space-y-3">
               <h5 className="font-serif font-bold text-sm text-bronze uppercase tracking-wider">Xưởng Chế Tác</h5>
-              <p className="text-xs text-beige/80 leading-relaxed font-sans">
-                Địa chỉ: Làng nghề đá mỹ nghệ xã Ninh Vân, huyện Hoa Lư, tỉnh Ninh Bình.<br />
-                Hotline chăm sóc khách hàng: 0987.654.321<br />
-                Email: lienhe@dataman.vn
+              <p className="text-xs text-beige/80 leading-relaxed font-sans whitespace-pre-line">
+                {siteSettings?.footer_address || `Địa chỉ: Làng nghề đá mỹ nghệ xã Ninh Vân, huyện Hoa Lư, tỉnh Ninh Bình.\nHotline chăm sóc khách hàng: 0987.654.321\nEmail: lienhe@dataman.vn`}
               </p>
+            </div>
+
+            {/* Column 4: Follow us (Theo dõi chúng tôi) */}
+            <div className="md:col-span-3 space-y-4">
+              <h5 className="font-serif font-bold text-sm text-bronze uppercase tracking-wider">Theo Dõi Chúng Tôi</h5>
+              <p className="text-xs text-beige/70 leading-relaxed font-sans">
+                Cập nhật các công trình lăng mộ đá mới nhất và những chia sẻ phong thủy hữu ích qua mạng xã hội của chúng tôi.
+              </p>
+              <div className="flex items-center gap-3 pt-1">
+                {/* Facebook button */}
+                <a 
+                  href={siteSettings?.facebook_url || "https://facebook.com"} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 hover:border-[#1877F2] hover:bg-[#1877F2]/15 hover:text-[#1877F2] flex items-center justify-center text-beige transition-all duration-300"
+                  title="Facebook"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                  </svg>
+                </a>
+                
+                {/* TikTok button */}
+                <a 
+                  href={siteSettings?.tiktok_url || "https://tiktok.com"} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 hover:border-[#00f2fe] hover:bg-[#00f2fe]/10 hover:text-white flex items-center justify-center text-beige transition-all duration-300"
+                  title="TikTok"
+                >
+                  <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.09-1.5-.77-.57-1.31-1.31-1.77-2.2v8.1c-.04 2.15-.71 4.36-2.24 5.88-1.53 1.55-3.8 2.33-5.96 2.14-2.11-.16-4.22-1.28-5.35-3.12C1.9 17.5 1.74 15.02 2.5 12.91c.78-2.18 2.76-3.89 5.04-4.24v4.09c-1.12.21-2.21.94-2.65 2.01-.44 1.05-.19 2.37.59 3.19.78.82 2.08 1.13 3.15.74 1.08-.39 1.75-1.51 1.78-2.66.02-3.1 0-6.21.01-9.31-.01-.58-.01-1.17-.01-1.71z" />
+                  </svg>
+                </a>
+
+                {/* YouTube button */}
+                <a 
+                  href={siteSettings?.youtube_url || "https://youtube.com"} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 hover:border-[#FF0000] hover:bg-[#FF0000]/15 hover:text-[#FF0000] flex items-center justify-center text-beige transition-all duration-300"
+                  title="YouTube"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
           </div>
@@ -1755,7 +2461,7 @@ export default function App() {
               &copy; {new Date().getFullYear()} Bia Mộ Đá Mỹ Nghệ Tâm An. Bảo lưu mọi quyền thương hiệu.
             </div>
             <div className="flex gap-4">
-              <span>Ninh Vân, Ninh Bình, Việt Nam</span>
+              <span>{siteSettings?.footer_address ? siteSettings.footer_address.split("\n")[0].replace("Địa chỉ: ", "") : "Ninh Vân, Hoa Lư, Ninh Bình"}</span>
               <span>•</span>
               <span>Chạm khắc chữ sâu mạ vàng 24K</span>
             </div>
